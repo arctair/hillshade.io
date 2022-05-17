@@ -1,5 +1,5 @@
 {
-  "name": "webapp",
+  "name": "webapp.hillshade.io",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -22,7 +22,8 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "sync": "aws s3 sync build/ s3://hillshade.io/",
-    "invalidate": "aws cloudfront create-invalidation --distribution-id E9IRLFA7I0BCO --paths '/'"
+    "invalidate": "aws cloudfront create-invalidation --distribution-id E9IRLFA7I0BCO --paths '/'",
+    "deploy": "for action in build sync invalidate ; do npm run $action ; done"
   },
   "eslintConfig": {
     "extends": [
