@@ -1,3 +1,4 @@
+import Cartograph from './components/Cartograph'
 import Versions from './components/Versions'
 
 export default function App() {
@@ -7,10 +8,13 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        textAlign: 'right',
+        backgroundColor: '#111',
+        color: '#EEE',
       }}
     >
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 1 }}>
+        <Cartograph />
+      </div>
       <div style={{ flex: 0 }}>
         <Versions />
       </div>
