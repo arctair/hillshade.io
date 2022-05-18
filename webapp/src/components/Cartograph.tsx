@@ -55,26 +55,44 @@ export default function Cartograph() {
 
       gl.useProgram(shaderProgram)
 
-      gl.uniformMatrix4fv(
-        gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-        false,
-        projectionMatrix,
-      )
+      let then = 0
+      const frame = (now: number) => {
+        try {
+          const delta = now - then
+          mat4.rotate(
+            modelViewMatrix,
+            modelViewMatrix,
+            (Math.PI / 4096) * delta,
+            [0, 0, 1],
+          )
+          then = now
+          gl.uniformMatrix4fv(
+            gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+            false,
+            projectionMatrix,
+          )
 
-      gl.uniformMatrix4fv(
-        gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-        false,
-        modelViewMatrix,
-      )
+          gl.uniformMatrix4fv(
+            gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+            false,
+            modelViewMatrix,
+          )
 
-      gl.clearColor(0.125 / 2, 0.125 / 2, 0.125 / 2, 1)
-      gl.clearDepth(1.0)
-      gl.enable(gl.DEPTH_TEST)
-      gl.depthFunc(gl.LEQUAL)
-      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          gl.clearColor(0.125 / 2, 0.125 / 2, 0.125 / 2, 1)
+          gl.clearDepth(1.0)
+          gl.enable(gl.DEPTH_TEST)
+          gl.depthFunc(gl.LEQUAL)
+          gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          setError('')
+        } catch (error) {
+          setError(`draw error: ${error}`)
+        }
 
-      setError('')
+        requestAnimationFrame(frame)
+      }
+
+      requestAnimationFrame(frame)
     } catch (error) {
       setError(`shader error: ${error}`)
     }
@@ -84,7 +102,6 @@ export default function Cartograph() {
     <div style={{ height: '100%', position: 'relative' }} ref={ref}>
       <canvas
         style={{
-          display: 'block',
           position: 'absolute',
         }}
         ref={canvasRef}
