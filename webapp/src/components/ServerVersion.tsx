@@ -25,18 +25,11 @@ function useServerVersion() {
 export default function ServerVersion() {
   const [version, versionError] = useServerVersion()
   return (
-    <div
-      style={{
-        position: 'absolute',
-        width: '100%',
-        bottom: 0,
-        textAlign: 'right',
-      }}
-    >
+    <div>
       {versionError ? (
-        <div>error fetching backend version: {versionError}</div>
+        <div>error fetching server version: {versionError}</div>
       ) : (
-        <div>backend version: {version}</div>
+        <div>server: {version}</div>
       )}
     </div>
   )
