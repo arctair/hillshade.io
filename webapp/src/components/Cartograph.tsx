@@ -39,7 +39,14 @@ export default function Cartograph() {
         shaderProgram,
         'aVertexPosition',
         2,
-        new Float32Array([1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0]),
+        new Float32Array(
+          [
+            [1.0, 1.0],
+            [-1.0, 1.0],
+            [1.0, -1.0],
+            [-1.0, -1.0],
+          ].flat(),
+        ),
       )
 
       loadVertexAttribArray(
@@ -47,10 +54,14 @@ export default function Cartograph() {
         shaderProgram,
         'aVertexColor',
         4,
-        new Float32Array([
-          1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
-          0.0, 1.0, 1.0,
-        ]),
+        new Float32Array(
+          [
+            [1.0, 1.0, 1.0, 1.0],
+            [1.0, 0.0, 0.0, 1.0],
+            [0.0, 1.0, 0.0, 1.0],
+            [0.0, 0.0, 1.0, 1.0],
+          ].flat(),
+        ),
       )
 
       gl.useProgram(shaderProgram)
