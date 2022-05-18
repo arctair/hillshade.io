@@ -38,13 +38,39 @@ export default function Cartograph() {
         gl,
         shaderProgram,
         'aVertexPosition',
-        2,
+        3,
         new Float32Array(
           [
-            [1.0, 1.0],
-            [-1.0, 1.0],
-            [1.0, -1.0],
-            [-1.0, -1.0],
+            //front
+            [-1.0, -1.0, 1.0],
+            [1.0, -1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [-1.0, 1.0, 1.0],
+            //back
+            [-1.0, -1.0, -1.0],
+            [-1.0, 1.0, -1.0],
+            [1.0, 1.0, -1.0],
+            [1.0, -1.0, -1.0],
+            //top
+            [-1.0, 1.0, -1.0],
+            [-1.0, 1.0, 1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, 1.0, -1.0],
+            //bottom
+            [-1.0, -1.0, -1.0],
+            [1.0, -1.0, -1.0],
+            [1.0, -1.0, 1.0],
+            [-1.0, -1.0, 1.0],
+            //right
+            [1.0, -1.0, -1.0],
+            [1.0, 1.0, -1.0],
+            [1.0, 1.0, 1.0],
+            [1.0, -1.0, 1.0],
+            //left
+            [-1.0, -1.0, -1.0],
+            [-1.0, -1.0, 1.0],
+            [-1.0, 1.0, 1.0],
+            [-1.0, 1.0, -1.0],
           ].flat(),
         ),
       )
@@ -56,15 +82,38 @@ export default function Cartograph() {
         4,
         new Float32Array(
           [
+            //front
             [1.0, 1.0, 1.0, 1.0],
+            //back
             [1.0, 0.0, 0.0, 1.0],
+            //top
             [0.0, 1.0, 0.0, 1.0],
+            //bottom
             [0.0, 0.0, 1.0, 1.0],
-          ].flat(),
+            //right
+            [1.0, 1.0, 0.0, 1.0],
+            //left
+            [1.0, 0.0, 1.0, 1.0],
+          ].flatMap((array) => repeat(array, 4)),
         ),
       )
 
       gl.useProgram(shaderProgram)
+
+      const indices = loadBufferSource(
+        gl,
+        gl.ELEMENT_ARRAY_BUFFER,
+        new Uint16Array(
+          [
+            [0, 1, 2, 0, 2, 3],
+            [4, 5, 6, 4, 6, 7],
+            [8, 9, 10, 8, 10, 11],
+            [12, 13, 14, 12, 14, 15],
+            [16, 17, 18, 16, 18, 19],
+            [20, 21, 22, 20, 22, 23],
+          ].flat(),
+        ),
+      )
 
       let then = 0
       const frame = (now: number) => {
@@ -75,6 +124,12 @@ export default function Cartograph() {
             modelViewMatrix,
             (Math.PI / 4096) * delta,
             [0, 0, 1],
+          )
+          mat4.rotate(
+            modelViewMatrix,
+            modelViewMatrix,
+            (Math.PI / 2048) * delta,
+            [0, 1, 0],
           )
           then = now
           gl.uniformMatrix4fv(
@@ -94,7 +149,8 @@ export default function Cartograph() {
           gl.enable(gl.DEPTH_TEST)
           gl.depthFunc(gl.LEQUAL)
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices)
+          gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
           setError('')
         } catch (error) {
           setError(`draw error: ${error}`)
@@ -192,17 +248,34 @@ function loadShader(
   return shader
 }
 
+function repeat<T>(array: Array<T>, times: number) {
+  const result: Array<T> = []
+  for (let i = 0; i < times; i++) {
+    array.forEach((e) => result.push(e))
+  }
+  return result
+}
+
 function loadVertexAttribArray(
   gl: WebGLRenderingContext,
   shaderProgram: WebGLProgram,
   attributeName: string,
   attributeSize: number,
-  array: Float32Array,
+  bufferSource: Float32Array,
 ) {
-  const buffer = gl.createBuffer()
-  gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW)
+  loadBufferSource(gl, gl.ARRAY_BUFFER, bufferSource)
   const location = gl.getAttribLocation(shaderProgram, attributeName)
   gl.vertexAttribPointer(location, attributeSize, gl.FLOAT, false, 0, 0)
   gl.enableVertexAttribArray(location)
+}
+
+function loadBufferSource(
+  gl: WebGLRenderingContext,
+  type: number,
+  bufferSource: BufferSource,
+) {
+  const buffer = gl.createBuffer()
+  gl.bindBuffer(type, buffer)
+  gl.bufferData(type, bufferSource, gl.STATIC_DRAW)
+  return buffer
 }
