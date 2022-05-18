@@ -1,0 +1,8 @@
+.padding:not(:last-child):after {
+  content: ' |\00a0';
+  color: #888;
+}
+
+.padding:last-child:after {
+  content: '\00a0';
+}

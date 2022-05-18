@@ -1,15 +1,16 @@
 import ClientVersion from './ClientVersion'
 import ServerVersion from './ServerVersion'
 
-export default function Versions() {
+type VersionsProps = { wrapper: (props: any) => JSX.Element }
+export default function Versions({ wrapper: Wrapper }: VersionsProps) {
   return (
-    <div
-      style={{
-        padding: '0 0.25rem',
-        textAlign: 'right',
-      }}
-    >
-      <ClientVersion /> | <ServerVersion />
-    </div>
+    <>
+      <Wrapper>
+        <ClientVersion />
+      </Wrapper>
+      <Wrapper>
+        <ServerVersion />
+      </Wrapper>
+    </>
   )
 }
