@@ -34,7 +34,24 @@ export default function Cartograph() {
     try {
       const shaderProgram = loadShaderProgram(gl)
 
-      bindPositionBuffer(gl, shaderProgram)
+      loadVertexAttribArray(
+        gl,
+        shaderProgram,
+        'aVertexPosition',
+        2,
+        new Float32Array([1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0]),
+      )
+
+      loadVertexAttribArray(
+        gl,
+        shaderProgram,
+        'aVertexColor',
+        4,
+        new Float32Array([
+          1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+          0.0, 1.0, 1.0,
+        ]),
+      )
 
       gl.useProgram(shaderProgram)
 
@@ -87,17 +104,23 @@ export default function Cartograph() {
 
 const defaultVertexShaderSource = `
 attribute vec4 aVertexPosition;
+attribute vec4 aVertexColor;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
+varying lowp vec4 vColor;
+
 void main() {
   gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  vColor = aVertexColor;
 }`
 
 const defaultFragmentShaderSource = `
+varying lowp vec4 vColor;
+
 void main() {
-  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+  gl_FragColor = vColor;
 }`
 
 function loadShaderProgram(
@@ -141,20 +164,17 @@ function loadShader(
   return shader
 }
 
-function bindPositionBuffer(
+function loadVertexAttribArray(
   gl: WebGLRenderingContext,
   shaderProgram: WebGLProgram,
-  positions: Float32Array = new Float32Array([
-    1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, -1.0,
-  ]),
+  attributeName: string,
+  attributeSize: number,
+  array: Float32Array,
 ) {
   const buffer = gl.createBuffer()
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
-  gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW)
-  const attribLocation = gl.getAttribLocation(
-    shaderProgram,
-    'aVertexPosition',
-  )
-  gl.vertexAttribPointer(attribLocation, 2, gl.FLOAT, false, 0, 0)
-  gl.enableVertexAttribArray(attribLocation)
+  gl.bufferData(gl.ARRAY_BUFFER, array, gl.STATIC_DRAW)
+  const location = gl.getAttribLocation(shaderProgram, attributeName)
+  gl.vertexAttribPointer(location, attributeSize, gl.FLOAT, false, 0, 0)
+  gl.enableVertexAttribArray(location)
 }
