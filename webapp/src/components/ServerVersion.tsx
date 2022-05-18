@@ -1,23 +1,20 @@
 import { useEffect, useState } from 'react'
 
-function useBackendVersion() {
+function useServerVersion() {
   const [version, setVersion] = useState('pending')
   const [error, setError] = useState('')
 
   useEffect(() => {
     ;(async () => {
-      while (true) {
-        try {
-          const response = await fetch('https://api.hillshade.io')
-          if (response.status >= 200 && response.status < 300) {
-            setVersion(await response.text())
-            break
-          }
+      try {
+        const response = await fetch('https://api.hillshade.io')
+        if (response.status >= 200 && response.status < 300) {
+          setVersion(await response.text())
+        } else {
           setError(response.statusText)
-        } catch (error) {
-          setError(`error: ${error}`)
         }
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+      } catch (error) {
+        setError(`error: ${error}`)
       }
     })()
   }, [])
@@ -25,8 +22,8 @@ function useBackendVersion() {
   return [version, error]
 }
 
-export default function Version() {
-  const [version, versionError] = useBackendVersion()
+export default function ServerVersion() {
+  const [version, versionError] = useServerVersion()
   return (
     <div
       style={{

@@ -1,5 +1,5 @@
-import Version from './components/Version'
+import ServerVersion from './components/ServerVersion'
 
 export default function App() {
-  return <Version />
+  return <ServerVersion />
 }
