@@ -1,0 +1,14 @@
+#!/bin/zsh
+cat <<EOF | ssh yagni -T
+  pip install flask waitress --user
+
+  mkdir hillshade.io
+  cd hillshade.io
+  git init
+  git remote add -f origin https://github.com/arctair/hillshade.io
+  git config core.sparseCheckout true
+  echo api >> .git/info/sparse-checkout
+  git pull origin main
+  ln -s $HOME/hillshade.io/api/scripts/api.hillshade.io.service $HOME/.config/systemd/user
+  systemctl enable api.hillshade.io --user
+EOF

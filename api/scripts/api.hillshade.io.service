@@ -1,0 +1,10 @@
+[Unit]
+Description=api.hillshade.io
+
+[Service]
+ExecStart=/usr/bin/python -m waitress --port 8090 --call main.app:create_app
+Type=simple
+WorkingDirectory=/home/arctair/hillshade.io/api
+
+[Install]
+WantedBy=default.target
