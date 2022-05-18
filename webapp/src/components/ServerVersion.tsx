@@ -24,13 +24,9 @@ function useServerVersion() {
 
 export default function ServerVersion() {
   const [version, versionError] = useServerVersion()
-  return (
-    <div>
-      {versionError ? (
-        <div>error fetching server version: {versionError}</div>
-      ) : (
-        <div>server: {version}</div>
-      )}
-    </div>
+  return versionError ? (
+    <>error fetching server version: {versionError}</>
+  ) : (
+    <>server: {version}</>
   )
 }

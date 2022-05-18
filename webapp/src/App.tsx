@@ -1,5 +1,4 @@
-import ClientVersion from './components/ClientVersion'
-import ServerVersion from './components/ServerVersion'
+import Versions from './components/Versions'
 
 export default function App() {
   return (
@@ -13,8 +12,7 @@ export default function App() {
     >
       <div style={{ flex: 1 }} />
       <div style={{ flex: 0 }}>
-        <ClientVersion />
-        <ServerVersion />
+        <Versions />
       </div>
     </div>
   )
