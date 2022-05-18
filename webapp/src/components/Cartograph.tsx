@@ -10,7 +10,7 @@ export default function Cartograph() {
     const div = ref.current!
     const canvas = canvasRef.current!
     canvas.width = div.clientWidth
-    canvas.height = div.clientHeight - 1
+    canvas.height = Math.floor(div.clientHeight)
 
     const gl = canvas.getContext('webgl')
     if (gl === null) {
