@@ -18,10 +18,10 @@ export default function Cartograph() {
     const projectionMatrix = mat4.create()
     mat4.ortho(
       projectionMatrix,
-      -canvas.width / 512,
-      canvas.width / 512,
-      -canvas.height / 512,
-      canvas.height / 512,
+      0,
+      canvas.width / 256,
+      -canvas.height / 256,
+      0,
       0.1,
       100.0,
     )
@@ -48,8 +48,16 @@ export default function Cartograph() {
         y: number
         texture: WebGLTexture
       }> = []
-      for (let x = -2 + xOffset; x < 2 + xOffset; x++) {
-        for (let y = -2 + yOffset; y < 2 + yOffset; y++) {
+      for (
+        let x = Math.floor(xOffset);
+        x <= Math.floor(xOffset + canvas.width / 256);
+        x++
+      ) {
+        for (
+          let y = Math.floor(yOffset);
+          y <= Math.floor(yOffset + canvas.height / 256);
+          y++
+        ) {
           const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
           textures.push({
             x,
