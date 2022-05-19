@@ -26,8 +26,14 @@ export default function Cartograph() {
       100.0,
     )
 
+    const [xOffset, yOffset] = [330, 715]
+
     const modelViewMatrix = mat4.create()
-    mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0])
+    mat4.translate(modelViewMatrix, modelViewMatrix, [
+      -xOffset,
+      yOffset,
+      -6.0,
+    ])
     mat4.rotate(modelViewMatrix, modelViewMatrix, Math.PI / 2, [1, 0, 0])
 
     const gl = canvas.getContext('webgl')
@@ -42,9 +48,9 @@ export default function Cartograph() {
         y: number
         texture: WebGLTexture
       }> = []
-      for (let x = -2; x < 2; x++) {
-        for (let y = -2; y < 2; y++) {
-          const queryString = `lyrs=y&hl=en&x=${330 + x}&y=${715 + y}&z=11`
+      for (let x = -2 + xOffset; x < 2 + xOffset; x++) {
+        for (let y = -2 + yOffset; y < 2 + yOffset; y++) {
+          const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
           textures.push({
             x,
             y,
