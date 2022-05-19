@@ -217,12 +217,12 @@ function loadTexture(gl: WebGLRenderingContext) {
     gl.TEXTURE_2D,
     0,
     gl.RGBA,
-    0,
-    0,
+    1,
+    1,
     0,
     gl.RGBA,
     gl.UNSIGNED_BYTE,
-    new Uint8Array([]),
+    new Uint8Array([0, 0, 0, 1]),
   )
   const image = new Image()
   image.onload = () => {
