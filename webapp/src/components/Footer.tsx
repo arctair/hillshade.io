@@ -9,6 +9,8 @@ export default function Footer() {
       style={{
         display: 'flex',
         justifyContent: 'right',
+        borderTop: '2.5px solid hsl(240, 20%, 70%)',
+        padding: '0.125rem 0',
       }}
     >
       {window.location.href.startsWith('http://localhost:') && (

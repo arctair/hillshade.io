@@ -8,8 +8,8 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: '#111',
-        color: '#EEE',
+        backgroundColor: 'hsl(120, 40%, 5%)',
+        color: 'hsl(120, 5%, 75%)',
       }}
     >
       <div style={{ flex: 1 }}>
