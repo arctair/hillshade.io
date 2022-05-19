@@ -16,10 +16,12 @@ export default function Cartograph() {
     canvas.height = Math.floor(div.clientHeight * devicePixelRatio)
 
     const projectionMatrix = mat4.create()
-    mat4.perspective(
+    mat4.ortho(
       projectionMatrix,
-      (45 * Math.PI) / 180,
-      canvas.clientWidth / canvas.clientHeight,
+      -canvas.width / 512,
+      canvas.width / 512,
+      -canvas.height / 512,
+      canvas.height / 512,
       0.1,
       100.0,
     )
@@ -40,8 +42,8 @@ export default function Cartograph() {
         y: number
         texture: WebGLTexture
       }> = []
-      for (let x = -2; x <= 2; x++) {
-        for (let y = -2; y <= 2; y++) {
+      for (let x = -2; x < 2; x++) {
+        for (let y = -2; y < 2; y++) {
           const queryString = `lyrs=y&hl=en&x=${330 + x}&y=${715 + y}&z=11`
           textures.push({
             x,
