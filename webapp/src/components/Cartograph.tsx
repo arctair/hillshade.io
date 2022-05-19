@@ -11,8 +11,9 @@ export default function Cartograph() {
   useEffect(() => {
     const div = ref.current!
     const canvas = canvasRef.current!
-    canvas.width = div.clientWidth
-    canvas.height = Math.floor(div.clientHeight)
+    const devicePixelRatio = window.devicePixelRatio || 1
+    canvas.width = div.clientWidth * devicePixelRatio
+    canvas.height = Math.floor(div.clientHeight * devicePixelRatio)
 
     const projectionMatrix = mat4.create()
     mat4.perspective(
@@ -149,6 +150,7 @@ export default function Cartograph() {
       <canvas
         style={{
           position: 'absolute',
+          height: '100%',
         }}
         ref={canvasRef}
       />
