@@ -34,7 +34,14 @@ export default function Cartograph() {
 
     try {
       const shaderProgram = loadShaderProgram(gl)
-      const texture = loadTexture(gl)
+      const texture0 = loadTexture(
+        gl,
+        'https://mt0.google.com/vt/lyrs=y&hl=en&x=330&y=715&z=11',
+      )
+      const texture1 = loadTexture(
+        gl,
+        'https://mt0.google.com/vt/lyrs=y&hl=en&x=331&y=715&z=11',
+      )
 
       loadVertexAttribArray(
         gl,
@@ -114,16 +121,15 @@ export default function Cartograph() {
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices)
 
-          gl.activeTexture(gl.TEXTURE0)
-          gl.bindTexture(gl.TEXTURE_2D, texture)
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
+          gl.activeTexture(gl.TEXTURE0)
 
-          gl.drawElements(
-            gl.TRIANGLES,
-            indicesSource.length,
-            gl.UNSIGNED_SHORT,
-            0,
-          )
+          gl.bindTexture(gl.TEXTURE_2D, texture0)
+          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+
+          gl.bindTexture(gl.TEXTURE_2D, texture1)
+          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12)
+
           setError('')
         } catch (error) {
           setError(`draw error: ${error}`)
@@ -159,7 +165,7 @@ export default function Cartograph() {
   )
 }
 
-function loadTexture(gl: WebGLRenderingContext) {
+function loadTexture(gl: WebGLRenderingContext, src: string) {
   const texture = gl.createTexture()
   gl.bindTexture(gl.TEXTURE_2D, texture)
   gl.texImage2D(
@@ -187,7 +193,7 @@ function loadTexture(gl: WebGLRenderingContext) {
     gl.generateMipmap(gl.TEXTURE_2D)
   }
   image.crossOrigin = 'anonymous'
-  image.src = 'https://mt0.google.com/vt/lyrs=y&hl=en&x=330&y=715&z=11'
+  image.src = src
   return texture
 }
 
