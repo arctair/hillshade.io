@@ -33,6 +33,7 @@ export default function Cartograph() {
 
     try {
       const shaderProgram = loadShaderProgram(gl)
+      const texture = loadTexture(gl)
 
       loadVertexAttribArray(
         gl,
@@ -78,27 +79,43 @@ export default function Cartograph() {
       loadVertexAttribArray(
         gl,
         shaderProgram,
-        'aVertexColor',
-        4,
+        'aTexturePosition',
+        2,
         new Float32Array(
           [
             //front
-            [1.0, 1.0, 1.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
             //back
-            [1.0, 0.0, 0.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
             //top
-            [0.0, 1.0, 0.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
             //bottom
-            [0.0, 0.0, 1.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
             //right
-            [1.0, 1.0, 0.0, 1.0],
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
             //left
-            [1.0, 0.0, 1.0, 1.0],
-          ].flatMap((array) => repeat(array, 4)),
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [1.0, 1.0],
+            [0.0, 1.0],
+          ].flat(),
         ),
       )
-
-      gl.useProgram(shaderProgram)
 
       const indices = loadBufferSource(
         gl,
@@ -118,6 +135,8 @@ export default function Cartograph() {
       let then = 0
       const frame = (now: number) => {
         try {
+          gl.useProgram(shaderProgram)
+
           const delta = now - then
           mat4.rotate(
             modelViewMatrix,
@@ -150,6 +169,11 @@ export default function Cartograph() {
           gl.depthFunc(gl.LEQUAL)
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
           gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices)
+
+          gl.activeTexture(gl.TEXTURE0)
+          gl.bindTexture(gl.TEXTURE_2D, texture)
+          gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
+
           gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
           setError('')
         } catch (error) {
@@ -186,25 +210,59 @@ export default function Cartograph() {
   )
 }
 
+function loadTexture(gl: WebGLRenderingContext) {
+  const texture = gl.createTexture()
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    0,
+    0,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    new Uint8Array([]),
+  )
+  const image = new Image()
+  image.onload = () => {
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      image,
+    )
+    gl.generateMipmap(gl.TEXTURE_2D)
+  }
+  image.crossOrigin = 'anonymous'
+  image.src = 'https://mt0.google.com/vt/lyrs=y&hl=en&x=330&y=715&z=11'
+  return texture
+}
+
 const defaultVertexShaderSource = `
 attribute vec4 aVertexPosition;
-attribute vec4 aVertexColor;
+attribute vec2 aTexturePosition;
 
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 
-varying lowp vec4 vColor;
+varying highp vec2 vTexturePosition;
 
 void main() {
   gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-  vColor = aVertexColor;
+  vTexturePosition = aTexturePosition;
 }`
 
 const defaultFragmentShaderSource = `
-varying lowp vec4 vColor;
+varying highp vec2 vTexturePosition;
+
+uniform sampler2D uSampler;
 
 void main() {
-  gl_FragColor = vColor;
+  gl_FragColor = texture2D(uSampler, vTexturePosition);
 }`
 
 function loadShaderProgram(
@@ -229,6 +287,8 @@ function loadShaderProgram(
     throw Error(`unable to load the shader program: ${shaderInfoLog}`)
   }
 
+  gl.useProgram(shaderProgram)
+
   return shaderProgram
 }
 
@@ -246,14 +306,6 @@ function loadShader(
     return Error(`unable to load the shader: ${shaderInfoLog}`)
   }
   return shader
-}
-
-function repeat<T>(array: Array<T>, times: number) {
-  const result: Array<T> = []
-  for (let i = 0; i < times; i++) {
-    array.forEach((e) => result.push(e))
-  }
-  return result
 }
 
 function loadVertexAttribArray(
