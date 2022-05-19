@@ -25,6 +25,7 @@ export default function Cartograph() {
 
     const modelViewMatrix = mat4.create()
     mat4.translate(modelViewMatrix, modelViewMatrix, [-0.0, 0.0, -6.0])
+    mat4.rotate(modelViewMatrix, modelViewMatrix, Math.PI / 2, [1, 0, 0])
 
     const gl = canvas.getContext('webgl')
     if (gl === null) {
@@ -42,36 +43,18 @@ export default function Cartograph() {
         3,
         new Float32Array(
           [
-            //front
-            [-1.0, -1.0, 1.0],
-            [1.0, -1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [-1.0, 1.0, 1.0],
-            //back
-            [-1.0, -1.0, -1.0],
-            [-1.0, 1.0, -1.0],
-            [1.0, 1.0, -1.0],
-            [1.0, -1.0, -1.0],
-            //top
-            [-1.0, 1.0, -1.0],
-            [-1.0, 1.0, 1.0],
-            [1.0, 1.0, 1.0],
-            [1.0, 1.0, -1.0],
-            //bottom
-            [-1.0, -1.0, -1.0],
-            [1.0, -1.0, -1.0],
-            [1.0, -1.0, 1.0],
-            [-1.0, -1.0, 1.0],
-            //right
-            [1.0, -1.0, -1.0],
-            [1.0, 1.0, -1.0],
-            [1.0, 1.0, 1.0],
-            [1.0, -1.0, 1.0],
-            //left
-            [-1.0, -1.0, -1.0],
-            [-1.0, -1.0, 1.0],
-            [-1.0, 1.0, 1.0],
-            [-1.0, 1.0, -1.0],
+            //nw
+            [-1, 0, -1],
+            [0, 0, -1],
+            [0, 0, 0],
+            [-1, 0, 0],
+            //ne
+            [0, 0, -1],
+            [1, 0, -1],
+            [1, 0, 0],
+            [0, 0, 0],
+            //sw
+            //se
           ].flat(),
         ),
       )
@@ -83,74 +66,35 @@ export default function Cartograph() {
         2,
         new Float32Array(
           [
-            //front
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            //back
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            //top
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            //bottom
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            //right
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
-            //left
-            [0.0, 0.0],
-            [1.0, 0.0],
-            [1.0, 1.0],
-            [0.0, 1.0],
+            //nw
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            //ne
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            //sw
+            //se
           ].flat(),
         ),
       )
 
+      const indicesSource = new Uint16Array(
+        [[0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7]].flat(),
+      )
       const indices = loadBufferSource(
         gl,
         gl.ELEMENT_ARRAY_BUFFER,
-        new Uint16Array(
-          [
-            [0, 1, 2, 0, 2, 3],
-            [4, 5, 6, 4, 6, 7],
-            [8, 9, 10, 8, 10, 11],
-            [12, 13, 14, 12, 14, 15],
-            [16, 17, 18, 16, 18, 19],
-            [20, 21, 22, 20, 22, 23],
-          ].flat(),
-        ),
+        indicesSource,
       )
 
-      let then = 0
-      const frame = (now: number) => {
+      const frame = () => {
         try {
           gl.useProgram(shaderProgram)
 
-          const delta = now - then
-          mat4.rotate(
-            modelViewMatrix,
-            modelViewMatrix,
-            (Math.PI / 4096) * delta,
-            [0, 0, 1],
-          )
-          mat4.rotate(
-            modelViewMatrix,
-            modelViewMatrix,
-            (Math.PI / 2048) * delta,
-            [0, 1, 0],
-          )
-          then = now
           gl.uniformMatrix4fv(
             gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
             false,
@@ -174,7 +118,12 @@ export default function Cartograph() {
           gl.bindTexture(gl.TEXTURE_2D, texture)
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
 
-          gl.drawElements(gl.TRIANGLES, 36, gl.UNSIGNED_SHORT, 0)
+          gl.drawElements(
+            gl.TRIANGLES,
+            indicesSource.length,
+            gl.UNSIGNED_SHORT,
+            0,
+          )
           setError('')
         } catch (error) {
           setError(`draw error: ${error}`)
