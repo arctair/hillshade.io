@@ -35,14 +35,24 @@ export default function Cartograph() {
 
     try {
       const shaderProgram = loadShaderProgram(gl)
-      const texture0 = loadTexture(
-        gl,
-        'https://mt0.google.com/vt/lyrs=y&hl=en&x=330&y=715&z=11',
-      )
-      const texture1 = loadTexture(
-        gl,
-        'https://mt0.google.com/vt/lyrs=y&hl=en&x=331&y=715&z=11',
-      )
+      const textures: Array<{
+        x: number
+        y: number
+        texture: WebGLTexture
+      }> = []
+      for (let x = -2; x <= 2; x++) {
+        for (let y = -2; y <= 2; y++) {
+          const queryString = `lyrs=y&hl=en&x=${330 + x}&y=${715 + y}&z=11`
+          textures.push({
+            x,
+            y,
+            texture: loadTexture(
+              gl,
+              `https://mt0.google.com/vt/${queryString}`,
+            )!,
+          })
+        }
+      }
 
       loadVertexAttribArray(
         gl,
@@ -50,20 +60,20 @@ export default function Cartograph() {
         'aVertexPosition',
         3,
         new Float32Array(
-          [
-            //nw
-            [-1, 0, -1],
-            [0, 0, -1],
-            [0, 0, 0],
-            [-1, 0, 0],
-            //ne
-            [0, 0, -1],
-            [1, 0, -1],
-            [1, 0, 0],
-            [0, 0, 0],
-            //sw
-            //se
-          ].flat(),
+          textures.flatMap(({ x, y }) => [
+            x,
+            0,
+            y,
+            x + 1,
+            0,
+            y,
+            x + 1,
+            0,
+            y + 1,
+            x,
+            0,
+            y + 1,
+          ]),
         ),
       )
 
@@ -72,26 +82,20 @@ export default function Cartograph() {
         shaderProgram,
         'aTexturePosition',
         2,
-        new Float32Array(
-          [
-            //nw
-            [0, 0],
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            //ne
-            [0, 0],
-            [1, 0],
-            [1, 1],
-            [0, 1],
-            //sw
-            //se
-          ].flat(),
-        ),
+        new Float32Array(textures.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1])),
       )
 
       const indicesSource = new Uint16Array(
-        [[0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7]].flat(),
+        textures
+          .map((_, index) => index * 4)
+          .flatMap((offset) => [
+            offset,
+            offset + 1,
+            offset + 2,
+            offset,
+            offset + 2,
+            offset + 3,
+          ]),
       )
       const indices = loadBufferSource(
         gl,
@@ -125,11 +129,10 @@ export default function Cartograph() {
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
           gl.activeTexture(gl.TEXTURE0)
 
-          gl.bindTexture(gl.TEXTURE_2D, texture0)
-          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
-
-          gl.bindTexture(gl.TEXTURE_2D, texture1)
-          gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12)
+          textures.forEach(({ texture }, index) => {
+            gl.bindTexture(gl.TEXTURE_2D, texture)
+            gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12 * index)
+          })
 
           setError('')
         } catch (error) {
