@@ -2,6 +2,8 @@ import { MutableRefObject, useEffect, useRef, useState } from 'react'
 
 const mat4 = require('gl-mat4')
 
+const defaultOffset = [330, 715]
+
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
@@ -20,21 +22,20 @@ export default function Cartograph() {
       projectionMatrix,
       0,
       canvas.width / 256,
-      -canvas.height / 256,
+      canvas.height / 256,
       0,
       0.1,
       100.0,
     )
 
-    const [xOffset, yOffset] = [330, 715]
+    const [xOffset, yOffset] = defaultOffset
 
     const modelViewMatrix = mat4.create()
     mat4.translate(modelViewMatrix, modelViewMatrix, [
       -xOffset,
-      yOffset,
-      -6.0,
+      -yOffset,
+      -1.0,
     ])
-    mat4.rotate(modelViewMatrix, modelViewMatrix, Math.PI / 2, [1, 0, 0])
 
     const gl = canvas.getContext('webgl')
     if (gl === null) {
@@ -50,12 +51,12 @@ export default function Cartograph() {
       }> = []
       for (
         let x = Math.floor(xOffset);
-        x <= Math.floor(xOffset + canvas.width / 256);
+        x <= xOffset + canvas.width / 256;
         x++
       ) {
         for (
           let y = Math.floor(yOffset);
-          y <= Math.floor(yOffset + canvas.height / 256);
+          y <= yOffset + canvas.height / 256;
           y++
         ) {
           const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
@@ -78,17 +79,17 @@ export default function Cartograph() {
         new Float32Array(
           textures.flatMap(({ x, y }) => [
             x,
-            0,
             y,
-            x + 1,
             0,
+            x + 1,
             y,
-            x + 1,
             0,
+            x + 1,
             y + 1,
+            0,
             x,
-            0,
             y + 1,
+            0,
           ]),
         ),
       )
