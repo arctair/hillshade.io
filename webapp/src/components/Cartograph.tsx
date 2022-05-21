@@ -1,8 +1,10 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import MapControls from './MapControls'
+import useModelViewMatrixOffsetBinding from './useModelViewMatrixOffsetBinding'
 
 const mat4 = require('gl-mat4')
 
-const defaultOffset = [330, 715]
+const defaultOffset: [number, number] = [330, 715]
 
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
@@ -10,7 +12,17 @@ export default function Cartograph() {
 
   const [error, setError] = useState('')
 
+  const [offset, setOffset] = useState(defaultOffset)
+  const modelViewMatrixRef = useRef(mat4.create())
+
+  useModelViewMatrixOffsetBinding({
+    modelViewMatrixRef,
+    offset,
+  })
+
   useEffect(() => {
+    const modelViewMatrix = modelViewMatrixRef.current!
+
     const div = ref.current!
     const canvas = canvasRef.current!
     const devicePixelRatio = window.devicePixelRatio || 1
@@ -28,35 +40,25 @@ export default function Cartograph() {
       100.0,
     )
 
-    const [xOffset, yOffset] = defaultOffset
-
-    const modelViewMatrix = mat4.create()
-    mat4.translate(modelViewMatrix, modelViewMatrix, [
-      -xOffset,
-      -yOffset,
-      -1.0,
-    ])
-
     const gl = canvas.getContext('webgl')
     if (gl === null) {
       return setError('webgl is not supported')
     }
 
     try {
-      const shaderProgram = loadShaderProgram(gl)
       const textures: Array<{
         x: number
         y: number
         texture: WebGLTexture
       }> = []
       for (
-        let x = Math.floor(xOffset);
-        x <= xOffset + canvas.width / 256;
+        let x = Math.floor(defaultOffset[0]);
+        x <= defaultOffset[0] + canvas.width / 256;
         x++
       ) {
         for (
-          let y = Math.floor(yOffset);
-          y <= yOffset + canvas.height / 256;
+          let y = Math.floor(defaultOffset[1]);
+          y <= defaultOffset[1] + canvas.height / 256;
           y++
         ) {
           const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
@@ -70,6 +72,8 @@ export default function Cartograph() {
           })
         }
       }
+
+      const shaderProgram = loadShaderProgram(gl)
 
       loadVertexAttribArray(
         gl,
@@ -167,6 +171,20 @@ export default function Cartograph() {
 
   return (
     <div style={{ height: '100%', position: 'relative' }} ref={ref}>
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+          zIndex: 1,
+        }}
+      >
+        <MapControls
+          onOffsetChange={([dx, dy]) =>
+            setOffset(([x, y]) => [x + dx, y + dy])
+          }
+        />
+      </div>
       <canvas
         style={{
           position: 'absolute',
