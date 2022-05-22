@@ -1,6 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import MapControls from './MapControls'
 import useModelViewMatrixOffsetBinding from './useModelViewMatrixOffsetBinding'
+import useProjectionMatrixSizeBinding from './useProjectionMatrixSizeBinding'
 
 const mat4 = require('gl-mat4')
 
@@ -26,11 +27,19 @@ export default function Cartograph() {
 
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [offset, setOffset] = useState(defaultOffset)
+
   const modelViewMatrixRef = useRef(mat4.create())
+
+  const projectionMatrixRef = useRef(mat4.create())
 
   useModelViewMatrixOffsetBinding({
     modelViewMatrixRef,
     offset,
+  })
+
+  useProjectionMatrixSizeBinding({
+    projectionMatrixRef,
+    size,
   })
 
   useEffect(() => {
@@ -67,6 +76,7 @@ export default function Cartograph() {
 
   useEffect(() => {
     const modelViewMatrix = modelViewMatrixRef.current!
+    const projectionMatrix = projectionMatrixRef.current!
     const tiles = tilesRef.current
 
     const div = ref.current!
@@ -78,17 +88,6 @@ export default function Cartograph() {
     canvas.height = height
     setSize({ width, height })
 
-    const projectionMatrix = mat4.create()
-    mat4.ortho(
-      projectionMatrix,
-      0,
-      width / 256,
-      height / 256,
-      0,
-      0.1,
-      100.0,
-    )
-
     const gl = canvas.getContext('webgl')
     if (gl === null) {
       return setError('webgl is not supported')
@@ -97,12 +96,6 @@ export default function Cartograph() {
 
     try {
       const shaderProgram = loadShaderProgram(gl)
-
-      gl.uniformMatrix4fv(
-        gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-        false,
-        projectionMatrix,
-      )
 
       const frame = () => {
         try {
@@ -167,6 +160,12 @@ export default function Cartograph() {
             gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
             false,
             modelViewMatrix,
+          )
+
+          gl.uniformMatrix4fv(
+            gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+            false,
+            projectionMatrix,
           )
 
           gl.clearColor(0.125 / 2, 0.125 / 2, 0.125 / 2, 1)
