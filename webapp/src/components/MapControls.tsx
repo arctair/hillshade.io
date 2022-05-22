@@ -10,7 +10,7 @@ export default function MapControls({ onOffsetChange }: MapControlsProps) {
 
   return (
     <div
-      style={{ height: '100%' }}
+      style={{ height: '100%', touchAction: 'none' }}
       onPointerDown={(e) => {
         lastPointerPositionRef.current = [e.clientX, e.clientY]
       }}
