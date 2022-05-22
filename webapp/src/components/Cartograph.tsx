@@ -109,7 +109,10 @@ export default function Cartograph() {
     const height = Math.floor(div.clientHeight * devicePixelRatio)
     canvas.width = width
     canvas.height = height
-    setSize({ width, height })
+    setSize({
+      width: width / devicePixelRatio,
+      height: height / devicePixelRatio,
+    })
 
     const gl = canvas.getContext('webgl')
     if (gl === null) return setError('webgl is not supported')
