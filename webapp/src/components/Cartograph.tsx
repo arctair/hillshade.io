@@ -5,20 +5,27 @@ import useProjectionMatrixSizeZoomBinding from './useProjectionMatrixSizeBinding
 
 const mat4 = require('gl-mat4')
 
-const defaultOffset: [number, number] = [330, 715]
+const defaultOffset: [number, number] = [
+  330 / Math.pow(2, 11),
+  715 / Math.pow(2, 11),
+]
+
+type Tile = {
+  url: string
+  left: number
+  top: number
+  right: number
+  bottom: number
+  zoom: number
+  texture: WebGLTexture
+}
 
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
   const glRef = useRef() as MutableRefObject<WebGLRenderingContext>
-  const tilesRef = useRef(
-    new Array<{
-      url: string
-      x: number
-      y: number
-      texture: WebGLTexture
-    }>(),
-  )
+  const tilesRef = useRef(new Array<Tile>())
+  const filteredTilesRef = useRef(new Array<Tile>())
   const tilesRefVersion = useRef(0)
   const tilesRefLoadedVersion = useRef(0)
   const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
@@ -28,7 +35,8 @@ export default function Cartograph() {
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [offset, setOffset] = useState(defaultOffset)
   const [zoom, setZoom] = useState(11)
-  const scale = Math.pow(2, zoom - 11)
+  const scale = Math.pow(2, zoom)
+  const lastZoomFloorRef = useRef(zoom)
 
   const modelViewMatrixRef = useRef(mat4.create())
   const projectionMatrixRef = useRef(mat4.create())
@@ -48,23 +56,29 @@ export default function Cartograph() {
     const tiles = tilesRef.current
     const gl = glRef.current
     if (!gl) return
+
+    const zoomFloor = Math.floor(zoom)
+    const scaleFloor = Math.pow(2, zoomFloor)
     for (
-      let x = Math.floor(offset[0]);
-      x < offset[0] + size.width / 256;
+      let x = Math.floor(offset[0] * scaleFloor);
+      x < offset[0] * scaleFloor + size.width / 256;
       x++
     ) {
       for (
-        let y = Math.floor(offset[1]);
-        y < offset[1] + size.height / 256;
+        let y = Math.floor(offset[1] * scaleFloor);
+        y < offset[1] * scaleFloor + size.height / 256;
         y++
       ) {
-        const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
+        const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=${zoomFloor}`
         const url = `https://mt0.google.com/vt/${queryString}`
         if (tiles.every((tile) => tile.url !== url)) {
           tiles.push({
             url,
-            x,
-            y,
+            left: x / scaleFloor,
+            top: y / scaleFloor,
+            right: x / scaleFloor + 1 / scaleFloor,
+            bottom: y / scaleFloor + 1 / scaleFloor,
+            zoom: zoomFloor,
             texture: loadTexture(
               gl,
               `https://mt0.google.com/vt/${queryString}`,
@@ -74,12 +88,19 @@ export default function Cartograph() {
         }
       }
     }
-  }, [offset, size])
+
+    filteredTilesRef.current = tiles.filter(
+      (tile) => tile.zoom === zoomFloor,
+    )
+    if (zoomFloor !== lastZoomFloorRef.current) {
+      lastZoomFloorRef.current = zoomFloor
+      tilesRefVersion.current++
+    }
+  }, [offset, size, zoom])
 
   useEffect(() => {
     const modelViewMatrix = modelViewMatrixRef.current!
     const projectionMatrix = projectionMatrixRef.current!
-    const tiles = tilesRef.current
 
     const div = ref.current!
     const canvas = canvasRef.current!
@@ -98,6 +119,7 @@ export default function Cartograph() {
       const shaderProgram = loadShaderProgram(gl)
 
       const frame = () => {
+        const filteredTiles = filteredTilesRef.current
         try {
           if (tilesRefVersion.current > tilesRefLoadedVersion.current) {
             tilesRefLoadedVersion.current = tilesRefVersion.current
@@ -108,18 +130,18 @@ export default function Cartograph() {
               'aVertexPosition',
               3,
               new Float32Array(
-                tiles.flatMap(({ x, y }) => [
-                  x,
-                  y,
+                filteredTiles.flatMap(({ left, top, right, bottom }) => [
+                  left,
+                  top,
                   0,
-                  x + 1,
-                  y,
+                  right,
+                  top,
                   0,
-                  x + 1,
-                  y + 1,
+                  right,
+                  bottom,
                   0,
-                  x,
-                  y + 1,
+                  left,
+                  bottom,
                   0,
                 ]),
               ),
@@ -131,12 +153,12 @@ export default function Cartograph() {
               'aTexturePosition',
               2,
               new Float32Array(
-                tiles.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1]),
+                filteredTiles.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1]),
               ),
             )
 
             const indicesSource = new Uint16Array(
-              tiles
+              filteredTiles
                 .map((_, index) => index * 4)
                 .flatMap((offset) => [
                   offset,
@@ -178,7 +200,7 @@ export default function Cartograph() {
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
           gl.activeTexture(gl.TEXTURE0)
 
-          tiles.forEach(({ texture }, index) => {
+          filteredTiles.forEach(({ texture }, index) => {
             gl.bindTexture(gl.TEXTURE_2D, texture)
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12 * index)
           })
