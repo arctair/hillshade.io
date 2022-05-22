@@ -186,7 +186,7 @@ export default function Cartograph() {
 
           setError('')
         } catch (error) {
-          setError(`draw error: ${error}`)
+          setError(`animation frame error: ${error}`)
         }
 
         requestAnimationFrame(frame)
