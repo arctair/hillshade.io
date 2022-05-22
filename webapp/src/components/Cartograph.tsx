@@ -76,8 +76,8 @@ export default function Cartograph() {
             url,
             left: x / scaleFloor,
             top: y / scaleFloor,
-            right: x / scaleFloor + 1 / scaleFloor,
-            bottom: y / scaleFloor + 1 / scaleFloor,
+            right: (x + 1) / scaleFloor,
+            bottom: (y + 1) / scaleFloor,
             zoom: zoomFloor,
             texture: loadTexture(
               gl,
