@@ -1,7 +1,7 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import MapControls from './MapControls'
 import useModelViewMatrixOffsetBinding from './useModelViewMatrixOffsetBinding'
-import useProjectionMatrixSizeBinding from './useProjectionMatrixSizeBinding'
+import useProjectionMatrixSizeZoomBinding from './useProjectionMatrixSizeBinding'
 
 const mat4 = require('gl-mat4')
 
@@ -27,9 +27,10 @@ export default function Cartograph() {
 
   const [size, setSize] = useState({ width: 0, height: 0 })
   const [offset, setOffset] = useState(defaultOffset)
+  const [zoom, setZoom] = useState(11)
+  const scale = Math.pow(2, zoom - 11)
 
   const modelViewMatrixRef = useRef(mat4.create())
-
   const projectionMatrixRef = useRef(mat4.create())
 
   useModelViewMatrixOffsetBinding({
@@ -37,9 +38,10 @@ export default function Cartograph() {
     offset,
   })
 
-  useProjectionMatrixSizeBinding({
+  useProjectionMatrixSizeZoomBinding({
     projectionMatrixRef,
     size,
+    scale,
   })
 
   useEffect(() => {
@@ -89,9 +91,7 @@ export default function Cartograph() {
     setSize({ width, height })
 
     const gl = canvas.getContext('webgl')
-    if (gl === null) {
-      return setError('webgl is not supported')
-    }
+    if (gl === null) return setError('webgl is not supported')
     glRef.current = gl
 
     try {
@@ -208,9 +208,10 @@ export default function Cartograph() {
         }}
       >
         <MapControls
-          onOffsetChange={([dx, dy]) =>
-            setOffset(([x, y]) => [x + dx, y + dy])
+          onPan={([dx, dy]) =>
+            setOffset(([x, y]) => [x + dx / scale, y + dy / scale])
           }
+          onZoom={(dz) => setZoom((zoom) => zoom + dz)}
         />
       </div>
       <canvas

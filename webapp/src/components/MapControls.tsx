@@ -1,9 +1,10 @@
 import { MutableRefObject, useRef } from 'react'
 
 type MapControlsProps = {
-  onOffsetChange: (offset: [number, number]) => void
+  onPan: (delta: [number, number]) => void
+  onZoom: (dz: number) => void
 }
-export default function MapControls({ onOffsetChange }: MapControlsProps) {
+export default function MapControls({ onPan, onZoom }: MapControlsProps) {
   const lastPointerPositionRef = useRef() as MutableRefObject<
     [number, number] | undefined
   >
@@ -24,7 +25,7 @@ export default function MapControls({ onOffsetChange }: MapControlsProps) {
             ((lastPointerPositition[1] - pointerPosition[1]) / 256) *
               window.devicePixelRatio,
           ]
-          onOffsetChange([dx, dy])
+          onPan([dx, dy])
 
           lastPointerPositionRef.current = pointerPosition
         }
@@ -32,6 +33,7 @@ export default function MapControls({ onOffsetChange }: MapControlsProps) {
       onPointerUp={() => {
         lastPointerPositionRef.current = undefined
       }}
+      onWheel={(e) => onZoom(-e.deltaY / 114 / 4)}
     />
   )
 }
