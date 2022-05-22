@@ -9,15 +9,22 @@ const defaultOffset: [number, number] = [330, 715]
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
-  const texturesRef = useRef(
-    new Array<{ x: number; y: number; texture: WebGLTexture }>(),
+  const glRef = useRef() as MutableRefObject<WebGLRenderingContext>
+  const tilesRef = useRef(
+    new Array<{
+      url: string
+      x: number
+      y: number
+      texture: WebGLTexture
+    }>(),
   )
-  const texturesRefVersion = useRef(0)
-  const texturesRefLoadedVersion = useRef(0)
+  const tilesRefVersion = useRef(0)
+  const tilesRefLoadedVersion = useRef(0)
   const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
 
   const [error, setError] = useState('')
 
+  const [size, setSize] = useState({ width: 0, height: 0 })
   const [offset, setOffset] = useState(defaultOffset)
   const modelViewMatrixRef = useRef(mat4.create())
 
@@ -27,20 +34,56 @@ export default function Cartograph() {
   })
 
   useEffect(() => {
+    const tiles = tilesRef.current
+    const gl = glRef.current
+    if (!gl) return
+    for (
+      let x = Math.floor(offset[0]);
+      x < offset[0] + size.width / 256;
+      x++
+    ) {
+      for (
+        let y = Math.floor(offset[1]);
+        y < offset[1] + size.height / 256;
+        y++
+      ) {
+        const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
+        const url = `https://mt0.google.com/vt/${queryString}`
+        if (tiles.every((tile) => tile.url !== url)) {
+          tiles.push({
+            url,
+            x,
+            y,
+            texture: loadTexture(
+              gl,
+              `https://mt0.google.com/vt/${queryString}`,
+            )!,
+          })
+          tilesRefVersion.current++
+        }
+      }
+    }
+  }, [offset, size])
+
+  useEffect(() => {
     const modelViewMatrix = modelViewMatrixRef.current!
+    const tiles = tilesRef.current
 
     const div = ref.current!
     const canvas = canvasRef.current!
     const devicePixelRatio = window.devicePixelRatio || 1
-    canvas.width = div.clientWidth * devicePixelRatio
-    canvas.height = Math.floor(div.clientHeight * devicePixelRatio)
+    const width = div.clientWidth * devicePixelRatio
+    const height = Math.floor(div.clientHeight * devicePixelRatio)
+    canvas.width = width
+    canvas.height = height
+    setSize({ width, height })
 
     const projectionMatrix = mat4.create()
     mat4.ortho(
       projectionMatrix,
       0,
-      canvas.width / 256,
-      canvas.height / 256,
+      width / 256,
+      height / 256,
       0,
       0.1,
       100.0,
@@ -50,40 +93,21 @@ export default function Cartograph() {
     if (gl === null) {
       return setError('webgl is not supported')
     }
+    glRef.current = gl
 
     try {
-      const textures = texturesRef.current
-      for (
-        let x = Math.floor(defaultOffset[0]);
-        x <= defaultOffset[0] + canvas.width / 256;
-        x++
-      ) {
-        for (
-          let y = Math.floor(defaultOffset[1]);
-          y <= defaultOffset[1] + canvas.height / 256;
-          y++
-        ) {
-          const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
-          textures.push({
-            x,
-            y,
-            texture: loadTexture(
-              gl,
-              `https://mt0.google.com/vt/${queryString}`,
-            )!,
-          })
-          texturesRefVersion.current++
-        }
-      }
-
       const shaderProgram = loadShaderProgram(gl)
+
+      gl.uniformMatrix4fv(
+        gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+        false,
+        projectionMatrix,
+      )
 
       const frame = () => {
         try {
-          if (
-            texturesRefVersion.current > texturesRefLoadedVersion.current
-          ) {
-            texturesRefLoadedVersion.current = texturesRefVersion.current
+          if (tilesRefVersion.current > tilesRefLoadedVersion.current) {
+            tilesRefLoadedVersion.current = tilesRefVersion.current
 
             loadVertexAttribArray(
               gl,
@@ -91,7 +115,7 @@ export default function Cartograph() {
               'aVertexPosition',
               3,
               new Float32Array(
-                textures.flatMap(({ x, y }) => [
+                tiles.flatMap(({ x, y }) => [
                   x,
                   y,
                   0,
@@ -114,12 +138,12 @@ export default function Cartograph() {
               'aTexturePosition',
               2,
               new Float32Array(
-                textures.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1]),
+                tiles.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1]),
               ),
             )
 
             const indicesSource = new Uint16Array(
-              textures
+              tiles
                 .map((_, index) => index * 4)
                 .flatMap((offset) => [
                   offset,
@@ -140,12 +164,6 @@ export default function Cartograph() {
           gl.useProgram(shaderProgram)
 
           gl.uniformMatrix4fv(
-            gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-            false,
-            projectionMatrix,
-          )
-
-          gl.uniformMatrix4fv(
             gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
             false,
             modelViewMatrix,
@@ -161,7 +179,7 @@ export default function Cartograph() {
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
           gl.activeTexture(gl.TEXTURE0)
 
-          Array.from(textures.values()).forEach(({ texture }, index) => {
+          tiles.forEach(({ texture }, index) => {
             gl.bindTexture(gl.TEXTURE_2D, texture)
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12 * index)
           })
