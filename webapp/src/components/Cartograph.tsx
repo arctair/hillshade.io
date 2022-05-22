@@ -327,7 +327,7 @@ function loadShader(
   if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
     const shaderInfoLog = gl.getShaderInfoLog(shader)
     gl.deleteShader(shader)
-    return Error(`unable to load the shader: ${shaderInfoLog}`)
+    throw Error(`unable to load the shader: ${shaderInfoLog}`)
   }
   return shader
 }
