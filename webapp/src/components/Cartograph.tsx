@@ -9,7 +9,9 @@ const defaultOffset: [number, number] = [330, 715]
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
-  const texturesRef = useRef(new Map<[number, number], WebGLTexture>())
+  const texturesRef = useRef(
+    new Array<{ x: number; y: number; texture: WebGLTexture }>(),
+  )
   const texturesRefVersion = useRef(0)
   const texturesRefLoadedVersion = useRef(0)
   const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
@@ -62,10 +64,14 @@ export default function Cartograph() {
           y++
         ) {
           const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=11`
-          textures.set(
-            [x, y],
-            loadTexture(gl, `https://mt0.google.com/vt/${queryString}`)!,
-          )
+          textures.push({
+            x,
+            y,
+            texture: loadTexture(
+              gl,
+              `https://mt0.google.com/vt/${queryString}`,
+            )!,
+          })
           texturesRefVersion.current++
         }
       }
@@ -85,7 +91,7 @@ export default function Cartograph() {
               'aVertexPosition',
               3,
               new Float32Array(
-                Array.from(textures.keys()).flatMap(([x, y]) => [
+                textures.flatMap(({ x, y }) => [
                   x,
                   y,
                   0,
@@ -108,14 +114,12 @@ export default function Cartograph() {
               'aTexturePosition',
               2,
               new Float32Array(
-                Array.from(textures.values()).flatMap(() => [
-                  0, 0, 1, 0, 1, 1, 0, 1,
-                ]),
+                textures.flatMap(() => [0, 0, 1, 0, 1, 1, 0, 1]),
               ),
             )
 
             const indicesSource = new Uint16Array(
-              Array.from(textures.values())
+              textures
                 .map((_, index) => index * 4)
                 .flatMap((offset) => [
                   offset,
@@ -157,7 +161,7 @@ export default function Cartograph() {
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
           gl.activeTexture(gl.TEXTURE0)
 
-          Array.from(textures.values()).forEach((texture, index) => {
+          Array.from(textures.values()).forEach(({ texture }, index) => {
             gl.bindTexture(gl.TEXTURE_2D, texture)
             gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 12 * index)
           })
