@@ -10,6 +10,9 @@ export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
   const texturesRef = useRef(new Map<[number, number], WebGLTexture>())
+  const texturesRefVersion = useRef(0)
+  const texturesRefLoadedVersion = useRef(0)
+  const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
 
   const [error, setError] = useState('')
 
@@ -63,66 +66,73 @@ export default function Cartograph() {
             [x, y],
             loadTexture(gl, `https://mt0.google.com/vt/${queryString}`)!,
           )
+          texturesRefVersion.current++
         }
       }
 
       const shaderProgram = loadShaderProgram(gl)
 
-      loadVertexAttribArray(
-        gl,
-        shaderProgram,
-        'aVertexPosition',
-        3,
-        new Float32Array(
-          Array.from(textures.keys()).flatMap(([x, y]) => [
-            x,
-            y,
-            0,
-            x + 1,
-            y,
-            0,
-            x + 1,
-            y + 1,
-            0,
-            x,
-            y + 1,
-            0,
-          ]),
-        ),
-      )
-
-      loadVertexAttribArray(
-        gl,
-        shaderProgram,
-        'aTexturePosition',
-        2,
-        new Float32Array(
-          Array.from(textures.values()).flatMap(() => [
-            0, 0, 1, 0, 1, 1, 0, 1,
-          ]),
-        ),
-      )
-
-      const indicesSource = new Uint16Array(
-        Array.from(textures.values())
-          .map((_, index) => index * 4)
-          .flatMap((offset) => [
-            offset,
-            offset + 1,
-            offset + 2,
-            offset,
-            offset + 2,
-            offset + 3,
-          ]),
-      )
-      const indices = loadBufferSource(
-        gl,
-        gl.ELEMENT_ARRAY_BUFFER,
-        indicesSource,
-      )
-
       const frame = () => {
         try {
+          if (
+            texturesRefVersion.current > texturesRefLoadedVersion.current
+          ) {
+            texturesRefLoadedVersion.current = texturesRefVersion.current
+
+            loadVertexAttribArray(
+              gl,
+              shaderProgram,
+              'aVertexPosition',
+              3,
+              new Float32Array(
+                Array.from(textures.keys()).flatMap(([x, y]) => [
+                  x,
+                  y,
+                  0,
+                  x + 1,
+                  y,
+                  0,
+                  x + 1,
+                  y + 1,
+                  0,
+                  x,
+                  y + 1,
+                  0,
+                ]),
+              ),
+            )
+
+            loadVertexAttribArray(
+              gl,
+              shaderProgram,
+              'aTexturePosition',
+              2,
+              new Float32Array(
+                Array.from(textures.values()).flatMap(() => [
+                  0, 0, 1, 0, 1, 1, 0, 1,
+                ]),
+              ),
+            )
+
+            const indicesSource = new Uint16Array(
+              Array.from(textures.values())
+                .map((_, index) => index * 4)
+                .flatMap((offset) => [
+                  offset,
+                  offset + 1,
+                  offset + 2,
+                  offset,
+                  offset + 2,
+                  offset + 3,
+                ]),
+            )
+            indicesRef.current = loadBufferSource(
+              gl,
+              gl.ELEMENT_ARRAY_BUFFER,
+              indicesSource,
+            )!
+          }
+
           gl.useProgram(shaderProgram)
 
           gl.uniformMatrix4fv(
@@ -142,7 +152,7 @@ export default function Cartograph() {
           gl.enable(gl.DEPTH_TEST)
           gl.depthFunc(gl.LEQUAL)
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indices)
+          gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indicesRef.current)
 
           gl.uniform1i(gl.getUniformLocation(shaderProgram, 'uSampler'), 0)
           gl.activeTexture(gl.TEXTURE0)
