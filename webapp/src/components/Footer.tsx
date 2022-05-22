@@ -13,7 +13,9 @@ export default function Footer() {
         padding: '0.125rem 0',
       }}
     >
-      {window.location.href.startsWith('http://localhost:') && (
+      {window.location.href.match(
+        /http:\/\/(localhost|192\.168\.\d+\.\d+):/,
+      ) && (
         <Padding>
           <SimpleAnchor href="http://hillshade.io">
             deployment
