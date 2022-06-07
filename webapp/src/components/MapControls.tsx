@@ -20,10 +20,8 @@ export default function MapControls({ onPan, onZoom }: MapControlsProps) {
           const lastPointerPositition = lastPointerPositionRef.current
           const pointerPosition: [number, number] = [e.clientX, e.clientY]
           const [dx, dy] = [
-            ((lastPointerPositition[0] - pointerPosition[0]) / 256) *
-              window.devicePixelRatio,
-            ((lastPointerPositition[1] - pointerPosition[1]) / 256) *
-              window.devicePixelRatio,
+            (lastPointerPositition[0] - pointerPosition[0]) / 256,
+            (lastPointerPositition[1] - pointerPosition[1]) / 256,
           ]
           onPan([dx, dy])
 
