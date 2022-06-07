@@ -5,15 +5,16 @@ const mat4 = require('gl-mat4')
 type useProjectionMatrixSizeBindingProps = {
   projectionMatrixRef: RefObject<any>
   size: { width: number; height: number }
-  scale: number
+  zoom: number
 }
 export default function useProjectionMatrixSizeZoomBinding({
   projectionMatrixRef,
   size,
-  scale,
+  zoom,
 }: useProjectionMatrixSizeBindingProps) {
   const projectionMatrix = projectionMatrixRef.current!
   useEffect(() => {
+    const scale = Math.pow(2, zoom)
     mat4.ortho(
       projectionMatrix,
       0,
@@ -23,5 +24,5 @@ export default function useProjectionMatrixSizeZoomBinding({
       0.1,
       100.0,
     )
-  }, [projectionMatrix, size, scale])
+  }, [projectionMatrix, size, zoom])
 }

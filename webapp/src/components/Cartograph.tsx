@@ -1,4 +1,10 @@
-import { MutableRefObject, useEffect, useRef, useState } from 'react'
+import {
+  MutableRefObject,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import MapControls from './MapControls'
 import {
   loadBufferSource,
@@ -8,13 +14,9 @@ import {
 } from './ShaderHelpers'
 import useModelViewMatrixOffsetBinding from './useModelViewMatrixOffsetBinding'
 import useProjectionMatrixSizeZoomBinding from './useProjectionMatrixSizeBinding'
+import { defaultViewState, viewStateReducer } from './ViewState'
 
 const mat4 = require('gl-mat4')
-
-const defaultOffset: [number, number] = [
-  330 / Math.pow(2, 11),
-  715 / Math.pow(2, 11),
-]
 
 type Tile = {
   url: string
@@ -37,15 +39,17 @@ export default function Cartograph() {
   const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
 
   const [error, setError] = useState('')
-
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [offset, setOffset] = useState(defaultOffset)
-  const [zoom, setZoom] = useState(11)
-  const scale = Math.pow(2, zoom)
-  const lastZoomFloorRef = useRef(zoom)
 
   const modelViewMatrixRef = useRef(mat4.create())
   const projectionMatrixRef = useRef(mat4.create())
+
+  const [{ offset, zoom }, dispatch] = useReducer(
+    viewStateReducer,
+    defaultViewState,
+  )
+
+  const lastZoomFloorRef = useRef(zoom)
 
   useModelViewMatrixOffsetBinding({
     modelViewMatrixRef,
@@ -55,7 +59,7 @@ export default function Cartograph() {
   useProjectionMatrixSizeZoomBinding({
     projectionMatrixRef,
     size,
-    scale,
+    zoom,
   })
 
   useEffect(() => {
@@ -239,10 +243,8 @@ export default function Cartograph() {
         }}
       >
         <MapControls
-          onPan={([dx, dy]) =>
-            setOffset(([x, y]) => [x + dx / scale, y + dy / scale])
-          }
-          onZoom={(dz) => setZoom((zoom) => zoom + dz)}
+          onPan={(deltaXY) => dispatch({ type: 'pan', deltaXY })}
+          onZoom={(deltaZ) => dispatch({ type: 'zoom', deltaZ })}
         />
       </div>
       <canvas
