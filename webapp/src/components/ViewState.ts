@@ -18,7 +18,11 @@ export interface PanAction {
   deltaXY: [number, number]
 }
 
-export function createPanAction(deltaXY: [number, number]): PanAction {
+export function createPanAction({
+  deltaXY,
+}: {
+  deltaXY: [number, number]
+}): PanAction {
   return {
     type: ActionType.Pan,
     deltaXY,
@@ -30,7 +34,11 @@ export interface ZoomAction {
   deltaZ: number
 }
 
-export function createZoomAction(deltaZ: number): ZoomAction {
+export function createZoomAction({
+  deltaZ,
+}: {
+  deltaZ: number
+}): ZoomAction {
   return {
     type: ActionType.Zoom,
     deltaZ,

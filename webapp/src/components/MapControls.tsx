@@ -24,11 +24,15 @@ export default function MapControls({ dispatch }: MapControlsProps) {
         if (lastPointerPositionRef.current) {
           const lastPointerPositition = lastPointerPositionRef.current
           const pointerPosition: [number, number] = [e.clientX, e.clientY]
-          const [dx, dy] = [
-            (lastPointerPositition[0] - pointerPosition[0]) / 256,
-            (lastPointerPositition[1] - pointerPosition[1]) / 256,
-          ]
-          dispatch(createPanAction([dx, dy]))
+
+          dispatch(
+            createPanAction({
+              deltaXY: [
+                (lastPointerPositition[0] - pointerPosition[0]) / 256,
+                (lastPointerPositition[1] - pointerPosition[1]) / 256,
+              ],
+            }),
+          )
 
           lastPointerPositionRef.current = pointerPosition
         }
@@ -36,7 +40,9 @@ export default function MapControls({ dispatch }: MapControlsProps) {
       onPointerUp={() => {
         lastPointerPositionRef.current = undefined
       }}
-      onWheel={(e) => dispatch(createZoomAction(-e.deltaY / 114 / 4))}
+      onWheel={(e) =>
+        dispatch(createZoomAction({ deltaZ: -e.deltaY / 114 / 4 }))
+      }
     />
   )
 }

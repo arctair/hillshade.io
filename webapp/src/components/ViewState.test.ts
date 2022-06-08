@@ -9,7 +9,7 @@ describe('pan', () => {
     expect(
       viewStateReducer(
         { offset: [0, 0], zoom: 0 },
-        createPanAction([1, 2]),
+        createPanAction({ deltaXY: [1, 2] }),
       ),
     ).toStrictEqual({
       offset: [1, 2],
@@ -21,7 +21,7 @@ describe('pan', () => {
     expect(
       viewStateReducer(
         { offset: [0, 0], zoom: 1 },
-        createPanAction([1, 2]),
+        createPanAction({ deltaXY: [1, 2] }),
       ),
     ).toStrictEqual({
       offset: [0.5, 1],
@@ -33,7 +33,7 @@ describe('pan', () => {
     expect(
       viewStateReducer(
         { offset: [0, 0], zoom: 2 },
-        createPanAction([1, 2]),
+        createPanAction({ deltaXY: [1, 2] }),
       ),
     ).toStrictEqual({
       offset: [0.25, 0.5],
@@ -44,6 +44,9 @@ describe('pan', () => {
 
 test('zoom', () => {
   expect(
-    viewStateReducer({ offset: [0, 0], zoom: 1 }, createZoomAction(1)),
+    viewStateReducer(
+      { offset: [0, 0], zoom: 1 },
+      createZoomAction({ deltaZ: 1 }),
+    ),
   ).toStrictEqual({ offset: [0, 0], zoom: 2 })
 })
