@@ -68,15 +68,15 @@ export default function Cartograph() {
     if (!gl) return
 
     const zoomFloor = Math.floor(zoom)
-    const scaleFloor = Math.pow(2, zoomFloor)
+    const scaleFloor = Math.pow(2, -zoomFloor)
     for (
-      let x = Math.floor(offset[0] * scaleFloor);
-      x < offset[0] * scaleFloor + size.width / 256;
+      let x = Math.floor(offset[0] / scaleFloor);
+      x < offset[0] / scaleFloor + size.width / 256;
       x++
     ) {
       for (
-        let y = Math.floor(offset[1] * scaleFloor);
-        y < offset[1] * scaleFloor + size.height / 256;
+        let y = Math.floor(offset[1] / scaleFloor);
+        y < offset[1] / scaleFloor + size.height / 256;
         y++
       ) {
         const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=${zoomFloor}`
@@ -84,10 +84,10 @@ export default function Cartograph() {
         if (tiles.every((tile) => tile.url !== url)) {
           tiles.push({
             url,
-            left: x / scaleFloor,
-            top: y / scaleFloor,
-            right: (x + 1) / scaleFloor,
-            bottom: (y + 1) / scaleFloor,
+            left: x * scaleFloor,
+            top: y * scaleFloor,
+            right: (x + 1) * scaleFloor,
+            bottom: (y + 1) * scaleFloor,
             zoom: zoomFloor,
             texture: loadTexture(
               gl,
