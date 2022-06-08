@@ -13,36 +13,28 @@ enum ActionType {
   Zoom,
 }
 
-export interface PanAction {
-  type: ActionType
+type PanActionProps = {
   deltaXY: [number, number]
 }
 
-export function createPanAction({
-  deltaXY,
-}: {
-  deltaXY: [number, number]
-}): PanAction {
-  return {
-    type: ActionType.Pan,
-    deltaXY,
-  }
-}
-
-export interface ZoomAction {
+export interface PanAction extends PanActionProps {
   type: ActionType
+}
+
+export function createPanAction(props: PanActionProps): PanAction {
+  return { ...props, type: ActionType.Pan }
+}
+
+type ZoomActionProps = {
   deltaZ: number
 }
 
-export function createZoomAction({
-  deltaZ,
-}: {
-  deltaZ: number
-}): ZoomAction {
-  return {
-    type: ActionType.Zoom,
-    deltaZ,
-  }
+export interface ZoomAction extends ZoomActionProps {
+  type: ActionType
+}
+
+export function createZoomAction(props: ZoomActionProps): ZoomAction {
+  return { ...props, type: ActionType.Zoom }
 }
 
 export function viewStateReducer(
