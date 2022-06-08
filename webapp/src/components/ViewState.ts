@@ -8,24 +8,59 @@ export const defaultViewState: ViewState = {
   zoom: 11,
 }
 
+enum ActionType {
+  Pan,
+  Zoom,
+}
+
+export interface PanAction {
+  type: ActionType
+  deltaXY: [number, number]
+}
+
+export function createPanAction(deltaXY: [number, number]): PanAction {
+  return {
+    type: ActionType.Pan,
+    deltaXY,
+  }
+}
+
+export interface ZoomAction {
+  type: ActionType
+  deltaZ: number
+}
+
+export function createZoomAction(deltaZ: number): ZoomAction {
+  return {
+    type: ActionType.Zoom,
+    deltaZ,
+  }
+}
+
 export function viewStateReducer(
   state: ViewState,
-  action: any,
+  action: PanAction | ZoomAction,
 ): ViewState {
   switch (action.type) {
-    case 'pan':
-      const {
-        offset: [x, y],
-        zoom,
-      } = state
-      const scale = Math.pow(2, zoom)
-      const [dx, dy] = action.deltaXY
-      return { ...state, offset: [x + dx / scale, y + dy / scale] }
-    case 'zoom':
-      return { ...state, zoom: state.zoom + action.deltaZ }
-    default:
-      throw Error(
-        `action of type '${action.type}' is irreducible because it is unknown`,
-      )
+    case ActionType.Pan:
+      return pan(state, action as PanAction)
+    case ActionType.Zoom:
+      return zoom(state, action as ZoomAction)
   }
+}
+
+function pan(
+  state: ViewState,
+  { deltaXY: [dx, dy] }: PanAction,
+): ViewState {
+  const {
+    offset: [x, y],
+    zoom,
+  } = state
+  const scale = Math.pow(2, -zoom)
+  return { ...state, offset: [x + dx * scale, y + dy * scale] }
+}
+
+function zoom(state: ViewState, { deltaZ }: ZoomAction): ViewState {
+  return { ...state, zoom: state.zoom + deltaZ }
 }

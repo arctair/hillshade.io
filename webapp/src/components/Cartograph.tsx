@@ -242,10 +242,7 @@ export default function Cartograph() {
           zIndex: 1,
         }}
       >
-        <MapControls
-          onPan={(deltaXY) => dispatch({ type: 'pan', deltaXY })}
-          onZoom={(deltaZ) => dispatch({ type: 'zoom', deltaZ })}
-        />
+        <MapControls dispatch={dispatch} />
       </div>
       <canvas
         style={{
