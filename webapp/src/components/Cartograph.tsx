@@ -244,7 +244,7 @@ export default function Cartograph() {
           zIndex: 1,
         }}
       >
-        <MapControls dispatch={dispatch} />
+        <MapControls onEvent={dispatch} />
       </div>
       <canvas
         style={{

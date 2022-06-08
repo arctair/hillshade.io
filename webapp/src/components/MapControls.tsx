@@ -7,9 +7,9 @@ import {
 } from './ViewState'
 
 type MapControlsProps = {
-  dispatch: React.Dispatch<PanAction | ZoomAction>
+  onEvent: (value: PanAction | ZoomAction) => void
 }
-export default function MapControls({ dispatch }: MapControlsProps) {
+export default function MapControls({ onEvent }: MapControlsProps) {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const lastPointerPositionRef = useRef() as MutableRefObject<
     [number, number] | undefined
@@ -27,7 +27,7 @@ export default function MapControls({ dispatch }: MapControlsProps) {
           const lastPointerPositition = lastPointerPositionRef.current
           const pointerPosition: [number, number] = [e.clientX, e.clientY]
 
-          dispatch(
+          onEvent(
             createPanAction({
               deltaXY: [
                 (lastPointerPositition[0] - pointerPosition[0]) / 256,
@@ -43,7 +43,7 @@ export default function MapControls({ dispatch }: MapControlsProps) {
         lastPointerPositionRef.current = undefined
       }}
       onWheel={(e) =>
-        dispatch(
+        onEvent(
           createZoomAction({
             deltaZ: -e.deltaY / 114 / 4,
             mapSize: [ref.current.offsetWidth, ref.current.offsetWidth],
