@@ -27,6 +27,8 @@ export function createPanAction(props: PanActionProps): PanAction {
 
 type ZoomActionProps = {
   deltaZ: number
+  mapSize: [number, number]
+  pointerXY: [number, number]
 }
 
 export interface ZoomAction extends ZoomActionProps {
@@ -61,6 +63,17 @@ function pan(
   return { ...state, offset: [x + dx * scale, y + dy * scale] }
 }
 
-function zoom(state: ViewState, { deltaZ }: ZoomAction): ViewState {
-  return { ...state, zoom: state.zoom + deltaZ }
+function zoom(
+  { offset: [x, y], zoom }: ViewState,
+  { deltaZ, mapSize: [width, height], pointerXY: [px, py] }: ZoomAction,
+): ViewState {
+  const deltaScale =
+    (Math.pow(2, -zoom) * (1 - Math.pow(2, -deltaZ))) / 256
+  return {
+    offset: [
+      x + (width * deltaScale * px) / width,
+      y + (height * deltaScale * py) / height,
+    ],
+    zoom: zoom + deltaZ,
+  }
 }

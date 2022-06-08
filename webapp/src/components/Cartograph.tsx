@@ -71,6 +71,8 @@ export default function Cartograph() {
     const scaleFloor = Math.pow(2, -zoomFloor)
     for (
       let x = Math.floor(offset[0] / scaleFloor);
+      // TODO: its assumed a tile is always 256 pixels wide...
+      // TODO: but that is true if and only if scale equals scaleFloor
       x < offset[0] / scaleFloor + size.width / 256;
       x++
     ) {
