@@ -42,11 +42,21 @@ describe('pan', () => {
   })
 })
 
-test('zoom', () => {
-  expect(
-    viewStateReducer(
-      { offset: [0, 0], zoom: 1 },
-      createZoomAction({ deltaZ: 1 }),
-    ),
-  ).toStrictEqual({ offset: [0, 0], zoom: 2 })
+describe('zoom', () => {
+  test('in', () => {
+    expect(
+      viewStateReducer(
+        { offset: [0, 0], zoom: 1 },
+        createZoomAction({ deltaZ: 1 }),
+      ),
+    ).toStrictEqual({ offset: [0, 0], zoom: 2 })
+  })
+  test('out', () => {
+    expect(
+      viewStateReducer(
+        { offset: [0, 0], zoom: 2 },
+        createZoomAction({ deltaZ: -1 }),
+      ),
+    ).toStrictEqual({ offset: [0, 0], zoom: 1 })
+  })
 })
