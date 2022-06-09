@@ -26,27 +26,24 @@ export default function Cartograph() {
 
   useEffect(() => {
     const modelViewMatrix = mat4.create()
-    mat4.translate(modelViewMatrix, modelViewMatrix, [
-      -viewState.offset[0] / 256,
-      -viewState.offset[1] / 256,
-      -6,
-    ])
+    mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
     matricesRef.current.modelViewMatrix = modelViewMatrix
-  }, [viewState.offset])
+  }, [])
 
   useEffect(() => {
+    const tileSize = 256
     const projectionMatrix = mat4.create()
     mat4.ortho(
       projectionMatrix,
-      0,
-      viewState.mapSize[0] / 256,
-      viewState.mapSize[1] / 256,
-      0,
+      viewState.offset[0] / tileSize,
+      viewState.offset[0] / tileSize + viewState.mapSize[0] / tileSize,
+      viewState.offset[1] / tileSize + viewState.mapSize[1] / tileSize,
+      viewState.offset[1] / tileSize,
       0.1,
       100.0,
     )
     matricesRef.current.projectionMatrix = projectionMatrix
-  }, [viewState.mapSize])
+  }, [viewState])
 
   useEffect(() => {
     const canvas = canvasRef.current
