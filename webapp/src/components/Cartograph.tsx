@@ -39,15 +39,15 @@ export default function Cartograph() {
   const indicesRef = useRef() as MutableRefObject<WebGLBuffer>
 
   const [error, setError] = useState('')
-  const [size, setSize] = useState({ width: 0, height: 0 })
 
   const modelViewMatrixRef = useRef(mat4.create())
   const projectionMatrixRef = useRef(mat4.create())
 
-  const [{ offset, zoom }, dispatch] = useReducer(
+  const [viewState, dispatch] = useReducer(
     viewStateReducer,
     defaultViewState,
   )
+  const { offset, zoom } = viewState
 
   const lastZoomFloorRef = useRef(zoom)
 
@@ -58,8 +58,7 @@ export default function Cartograph() {
 
   useProjectionMatrixSizeZoomBinding({
     projectionMatrixRef,
-    size,
-    zoom,
+    viewState,
   })
 
   useEffect(() => {
@@ -73,12 +72,12 @@ export default function Cartograph() {
       let x = Math.floor(offset[0] / scaleFloor);
       // TODO: its assumed a tile is always 256 pixels wide...
       // TODO: but that is true if and only if scale equals scaleFloor
-      x < offset[0] / scaleFloor + size.width / 256;
+      x < offset[0] / scaleFloor + viewState.mapSize[0] / 256;
       x++
     ) {
       for (
         let y = Math.floor(offset[1] / scaleFloor);
-        y < offset[1] / scaleFloor + size.height / 256;
+        y < offset[1] / scaleFloor + viewState.mapSize[1] / 256;
         y++
       ) {
         const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=${zoomFloor}`
@@ -108,7 +107,7 @@ export default function Cartograph() {
       lastZoomFloorRef.current = zoomFloor
       tilesRefVersion.current++
     }
-  }, [offset, size, zoom])
+  }, [offset, viewState.mapSize, zoom])
 
   useEffect(() => {
     const modelViewMatrix = modelViewMatrixRef.current!
@@ -121,10 +120,6 @@ export default function Cartograph() {
     const height = Math.floor(div.clientHeight * devicePixelRatio)
     canvas.width = width
     canvas.height = height
-    setSize({
-      width: width / devicePixelRatio,
-      height: height / devicePixelRatio,
-    })
 
     const gl = canvas.getContext('webgl')
     if (gl === null) return setError('webgl is not supported')

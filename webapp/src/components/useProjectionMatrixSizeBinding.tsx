@@ -1,16 +1,15 @@
 import { RefObject, useEffect } from 'react'
+import ViewState from './ViewState'
 
 const mat4 = require('gl-mat4')
 
 type useProjectionMatrixSizeBindingProps = {
   projectionMatrixRef: RefObject<any>
-  size: { width: number; height: number }
-  zoom: number
+  viewState: ViewState
 }
 export default function useProjectionMatrixSizeZoomBinding({
   projectionMatrixRef,
-  size,
-  zoom,
+  viewState: { mapSize, zoom },
 }: useProjectionMatrixSizeBindingProps) {
   const projectionMatrix = projectionMatrixRef.current!
   useEffect(() => {
@@ -18,11 +17,11 @@ export default function useProjectionMatrixSizeZoomBinding({
     mat4.ortho(
       projectionMatrix,
       0,
-      size.width / 256 / scale,
-      size.height / 256 / scale,
+      mapSize[0] / 256 / scale,
+      mapSize[1] / 256 / scale,
       0,
       0.1,
       100.0,
     )
-  }, [projectionMatrix, size, zoom])
+  }, [projectionMatrix, mapSize, zoom])
 }

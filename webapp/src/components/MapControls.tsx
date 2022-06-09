@@ -1,19 +1,32 @@
-import { MutableRefObject, useRef } from 'react'
+import { MutableRefObject, useEffect, useRef } from 'react'
 import {
   createPanAction,
+  createResizeAction,
   createZoomAction,
-  PanAction,
-  ZoomAction,
+  ViewStateAction,
 } from './ViewState'
 
 type MapControlsProps = {
-  onEvent: (value: PanAction | ZoomAction) => void
+  onEvent: (value: ViewStateAction) => void
 }
 export default function MapControls({ onEvent }: MapControlsProps) {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const lastPointerPositionRef = useRef() as MutableRefObject<
     [number, number] | undefined
   >
+
+  useEffect(() => {
+    function onResize() {
+      onEvent(
+        createResizeAction({
+          mapSize: [ref.current.offsetWidth, ref.current.offsetHeight],
+        }),
+      )
+    }
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [onEvent])
 
   return (
     <div
@@ -46,7 +59,6 @@ export default function MapControls({ onEvent }: MapControlsProps) {
         onEvent(
           createZoomAction({
             deltaZ: -e.deltaY / 114 / 4,
-            mapSize: [ref.current.offsetWidth, ref.current.offsetWidth],
             pointerXY: [e.clientX, e.clientY],
           }),
         )
