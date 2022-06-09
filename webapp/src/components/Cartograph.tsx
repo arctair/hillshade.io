@@ -76,9 +76,17 @@ class CartographWebGL {
       return
     }
 
-    const vertexShader = gl.createShader(gl.VERTEX_SHADER)!
-    gl.shaderSource(
-      vertexShader,
+    try {
+      this.initialize(gl)
+    } catch (error) {
+      onError((error as Error).message)
+    }
+  }
+
+  initialize(gl: WebGLRenderingContext) {
+    const vertexShader = createShader(
+      gl,
+      gl.VERTEX_SHADER,
       ` attribute vec4 aVertexPosition;
 
         uniform mat4 uModelViewMatrix;
@@ -88,32 +96,14 @@ class CartographWebGL {
           gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
         }`,
     )
-    gl.compileShader(vertexShader)
 
-    if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-      const shaderInfoLog = gl.getShaderInfoLog(vertexShader)
-      const message = `An error occurred compiling the shaders: ${shaderInfoLog}`
-      onError(message)
-      gl.deleteShader(vertexShader)
-      return
-    }
-
-    const fragmentShader = gl.createShader(gl.FRAGMENT_SHADER)!
-    gl.shaderSource(
-      fragmentShader,
+    const fragmentShader = createShader(
+      gl,
+      gl.FRAGMENT_SHADER,
       ` void main() {
           gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
         }`,
     )
-    gl.compileShader(fragmentShader)
-
-    if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-      const shaderInfoLog = gl.getShaderInfoLog(fragmentShader)
-      const message = `An error occurred compiling the shaders: ${shaderInfoLog}`
-      onError(message)
-      gl.deleteShader(fragmentShader)
-      return
-    }
 
     const program = gl.createProgram()!
     gl.attachShader(program, vertexShader)
@@ -123,8 +113,7 @@ class CartographWebGL {
     if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
       const programInfoLog = gl.getProgramInfoLog(program)
       const message = `Unable to initialize the shader program: ${programInfoLog}`
-      onError(message)
-      return
+      throw Error(message)
     }
 
     const aVertexPositionLocation = gl.getAttribLocation(
@@ -192,4 +181,23 @@ class CartographWebGL {
   }
 
   teardown() {}
+}
+
+function createShader(
+  gl: WebGLRenderingContext,
+  type: GLenum,
+  shaderSource: string,
+) {
+  const shader = gl.createShader(type)!
+  gl.shaderSource(shader, shaderSource)
+  gl.compileShader(shader)
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const shaderInfoLog = gl.getShaderInfoLog(shader)
+    const message = `An error occurred compiling the shaders: ${shaderInfoLog}`
+    gl.deleteShader(shader)
+    throw Error(message)
+  }
+
+  return shader
 }
