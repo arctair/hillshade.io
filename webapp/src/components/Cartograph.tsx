@@ -88,20 +88,26 @@ class CartographWebGL {
       gl,
       gl.VERTEX_SHADER,
       ` attribute vec4 aVertexPosition;
+        attribute vec4 aVertexColor;
 
         uniform mat4 uModelViewMatrix;
         uniform mat4 uProjectionMatrix;
 
+        varying lowp vec4 vColor;
+
         void main() {
           gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+          vColor = aVertexColor;
         }`,
     )
 
     const fragmentShader = createShader(
       gl,
       gl.FRAGMENT_SHADER,
-      ` void main() {
-          gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      ` varying lowp vec4 vColor;
+
+        void main() {
+          gl_FragColor = vColor;
         }`,
     )
 
@@ -120,6 +126,10 @@ class CartographWebGL {
       program,
       'aVertexPosition',
     )
+    const aVertexColorLocation = gl.getAttribLocation(
+      program,
+      'aVertexColor',
+    )
     const uProjectionMatrixLocation = gl.getUniformLocation(
       program,
       'uProjectionMatrix',
@@ -129,8 +139,8 @@ class CartographWebGL {
       'uModelViewMatrix',
     )
 
-    const positionsBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
+    const positionBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
       new Float32Array(
@@ -139,6 +149,21 @@ class CartographWebGL {
           [-1.0, 1.0],
           [1.0, -1.0],
           [-1.0, -1.0],
+        ].flat(),
+      ),
+      gl.STATIC_DRAW,
+    )
+
+    const colorBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array(
+        [
+          [1.0, 1.0, 1.0, 1.0],
+          [1.0, 0.0, 0.0, 1.0],
+          [0.0, 1.0, 0.0, 1.0],
+          [0.0, 0.0, 1.0, 1.0],
         ].flat(),
       ),
       gl.STATIC_DRAW,
@@ -162,7 +187,7 @@ class CartographWebGL {
     const modelViewMatrix = mat4.create()
     mat4.translate(modelViewMatrix, modelViewMatrix, [-0, 0, -6])
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, positionsBuffer)
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.vertexAttribPointer(
       aVertexPositionLocation,
       2,
@@ -172,6 +197,10 @@ class CartographWebGL {
       0,
     )
     gl.enableVertexAttribArray(aVertexPositionLocation)
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+    gl.vertexAttribPointer(aVertexColorLocation, 4, gl.FLOAT, false, 0, 0)
+    gl.enableVertexAttribArray(aVertexColorLocation)
 
     gl.useProgram(program)
 
