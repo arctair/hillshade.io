@@ -1,7 +1,8 @@
-import {
+import ViewState, {
   createPanAction,
   createResizeAction,
   createZoomAction,
+  selectExtent,
   viewStateReducer,
 } from './ViewState'
 
@@ -9,12 +10,12 @@ describe('pan', () => {
   test('when zoom is zero', () => {
     expect(
       viewStateReducer(
-        { mapSize: [0, 0], offset: [0, 0], zoom: 0 },
-        createPanAction({ deltaXY: [1, 2] }),
+        { mapSize: [1920, 1080], offset: [0, 0], zoom: 0 },
+        createPanAction({ deltaXY: [-256, 512] }),
       ),
     ).toStrictEqual({
-      mapSize: [0, 0],
-      offset: [1, 2],
+      mapSize: [1920, 1080],
+      offset: [-1, 2],
       zoom: 0,
     })
   })
@@ -22,26 +23,13 @@ describe('pan', () => {
   test('when zoom is one', () => {
     expect(
       viewStateReducer(
-        { mapSize: [0, 0], offset: [0, 0], zoom: 1 },
-        createPanAction({ deltaXY: [1, 2] }),
+        { mapSize: [1920, 1080], offset: [0, 0], zoom: 1 },
+        createPanAction({ deltaXY: [-128, 256] }),
       ),
     ).toStrictEqual({
-      mapSize: [0, 0],
-      offset: [0.5, 1],
+      mapSize: [1920, 1080],
+      offset: [-0.25, 0.5],
       zoom: 1,
-    })
-  })
-
-  test('when zoom is two', () => {
-    expect(
-      viewStateReducer(
-        { mapSize: [0, 0], offset: [0, 0], zoom: 2 },
-        createPanAction({ deltaXY: [1, 2] }),
-      ),
-    ).toStrictEqual({
-      mapSize: [0, 0],
-      offset: [0.25, 0.5],
-      zoom: 2,
     })
   })
 })
@@ -103,5 +91,28 @@ describe('zoom', () => {
         }),
       ),
     ).toStrictEqual({ mapSize: [256, 256], offset: [0, 0], zoom: 0 })
+  })
+})
+
+describe('selectExtent', () => {
+  test('select default extent', () => {
+    expect(
+      selectExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 0 }),
+    ).toStrictEqual([0, 1920 / 256, 1080 / 256, 0])
+  })
+  test('select zoomed extent', () => {
+    expect(
+      selectExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 1 }),
+    ).toStrictEqual([0, 1920 / 512, 1080 / 512, 0])
+  })
+  test('select zoomed extent hdpi', () => {
+    expect(
+      selectExtent({ mapSize: [3840, 2160], offset: [0, 0], zoom: 1 }),
+    ).toStrictEqual([0, 3840 / 512, 2160 / 512, 0])
+  })
+  test('select offset extent', () => {
+    expect(
+      selectExtent({ mapSize: [1920, 1080], offset: [1, 2], zoom: 0 }),
+    ).toStrictEqual([1, 1 + 1920 / 256, 2 + 1080 / 256, 2])
   })
 })

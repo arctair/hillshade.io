@@ -76,11 +76,16 @@ function pan(
   { deltaXY: [dx, dy] }: PanAction,
 ): ViewState {
   const {
+    mapSize,
     offset: [x, y],
     zoom,
   } = state
   const scale = Math.pow(2, -zoom)
-  return { ...state, offset: [x + dx * scale, y + dy * scale] }
+  return {
+    mapSize,
+    offset: [x + (dx / 256) * scale, y + (dy / 256) * scale],
+    zoom,
+  }
 }
 
 function resize(state: ViewState, { mapSize }: ResizeAction) {
@@ -102,4 +107,14 @@ function zoom(
     ],
     zoom: zoom + deltaZ,
   }
+}
+
+type Extent = [number, number, number, number]
+export function selectExtent({
+  mapSize: [width, height],
+  offset: [x, y],
+  zoom,
+}: ViewState): Extent {
+  const scale = Math.pow(2, zoom)
+  return [x, x + width / scale / 256, y + height / scale / 256, y]
 }

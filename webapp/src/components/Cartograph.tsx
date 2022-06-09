@@ -6,7 +6,11 @@ import {
   useState,
 } from 'react'
 import MapControls from './MapControls'
-import { defaultViewState, viewStateReducer } from './ViewState'
+import {
+  defaultViewState,
+  selectExtent,
+  viewStateReducer,
+} from './ViewState'
 
 const mat4 = require('gl-mat4')
 
@@ -31,17 +35,8 @@ export default function Cartograph() {
   }, [])
 
   useEffect(() => {
-    const tileSize = 256
     const projectionMatrix = mat4.create()
-    mat4.ortho(
-      projectionMatrix,
-      viewState.offset[0] / tileSize,
-      viewState.offset[0] / tileSize + viewState.mapSize[0] / tileSize,
-      viewState.offset[1] / tileSize + viewState.mapSize[1] / tileSize,
-      viewState.offset[1] / tileSize,
-      0.1,
-      100.0,
-    )
+    mat4.ortho(projectionMatrix, ...selectExtent(viewState), 0.1, 100.0)
     matricesRef.current.projectionMatrix = projectionMatrix
   }, [viewState])
 
