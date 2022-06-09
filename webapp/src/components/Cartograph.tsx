@@ -24,6 +24,11 @@ export default function Cartograph() {
   )
 
   useEffect(() => {
+    canvasRef.current.width = viewState.mapSize[0]
+    canvasRef.current.height = viewState.mapSize[1]
+  }, [viewState.mapSize])
+
+  useEffect(() => {
     const cartographWebGL = new CartographWebGL(canvasRef.current)
     return () => cartographWebGL.teardown()
   }, [])
