@@ -1,4 +1,10 @@
-import { MutableRefObject, useReducer, useRef, useState } from 'react'
+import {
+  MutableRefObject,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import MapControls from './MapControls'
 import { defaultViewState, viewStateReducer } from './ViewState'
 
@@ -16,6 +22,11 @@ export default function Cartograph() {
     viewStateReducer,
     defaultViewState,
   )
+
+  useEffect(() => {
+    const cartographWebGL = new CartographWebGL(canvasRef.current)
+    return () => cartographWebGL.teardown()
+  }, [])
 
   return (
     <div style={{ height: '100%', position: 'relative' }} ref={ref}>
@@ -47,4 +58,19 @@ export default function Cartograph() {
       </span>
     </div>
   )
+}
+
+class CartographWebGL {
+  constructor(canvas: HTMLCanvasElement) {
+    const gl = canvas.getContext('webgl')
+    if (gl === null) {
+      throw Error(
+        `Unable to initialize WebGL. Your browser or machine may not support it.`,
+      )
+    }
+    gl.clearColor(0, 0, 0, 1)
+    gl.clear(gl.COLOR_BUFFER_BIT)
+  }
+
+  teardown() {}
 }
