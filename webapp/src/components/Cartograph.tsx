@@ -28,6 +28,7 @@ export default function Cartograph() {
       canvasRef.current,
       setError,
     )
+    cartographWebGL.animationFrame()
     return () => cartographWebGL.teardown()
   }, [viewState.mapSize])
 
@@ -63,7 +64,19 @@ export default function Cartograph() {
   )
 }
 
+interface CartographWebGLContext {
+  aVertexColorLocation: number
+  aVertexPositionLocation: number
+  colorBuffer: WebGLBuffer
+  gl: WebGLRenderingContext
+  positionBuffer: WebGLBuffer
+  program: WebGLProgram
+  uModelViewMatrix: WebGLUniformLocation
+  uProjectionMatrixLocation: WebGLUniformLocation
+}
+
 class CartographWebGL {
+  context?: CartographWebGLContext
   constructor(
     canvas: HTMLCanvasElement,
     onError: (message: string) => void,
@@ -77,13 +90,13 @@ class CartographWebGL {
     }
 
     try {
-      this.initialize(gl)
+      this.context = this.initializeContext(gl)
     } catch (error) {
       onError((error as Error).message)
     }
   }
 
-  initialize(gl: WebGLRenderingContext) {
+  initializeContext(gl: WebGLRenderingContext) {
     const vertexShader = createShader(
       gl,
       gl.VERTEX_SHADER,
@@ -168,6 +181,32 @@ class CartographWebGL {
       ),
       gl.STATIC_DRAW,
     )
+
+    return {
+      aVertexColorLocation,
+      aVertexPositionLocation,
+      colorBuffer,
+      gl,
+      positionBuffer,
+      program,
+      uModelViewMatrix,
+      uProjectionMatrixLocation,
+    } as CartographWebGLContext
+  }
+
+  animationFrame() {
+    if (!this.context) throw Error('Context has not been initialized')
+
+    const {
+      aVertexColorLocation,
+      aVertexPositionLocation,
+      colorBuffer,
+      gl,
+      positionBuffer,
+      program,
+      uModelViewMatrix,
+      uProjectionMatrixLocation,
+    } = this.context
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
     gl.clearDepth(1.0)
