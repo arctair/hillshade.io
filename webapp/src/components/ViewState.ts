@@ -6,8 +6,8 @@ export default interface ViewState {
 
 export const defaultViewState: ViewState = {
   mapSize: [1, 1],
-  offset: [330 / Math.pow(2, 11), 715 / Math.pow(2, 11)],
-  zoom: 11,
+  offset: [0, 0],
+  zoom: 0,
 }
 
 export type ViewStateAction = PanAction | ResizeAction | ZoomAction

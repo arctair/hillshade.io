@@ -13,6 +13,10 @@ const mat4 = require('gl-mat4')
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
+  const matricesRef = useRef({
+    modelViewMatrix: mat4.create(),
+    projectionMatrix: mat4.create(),
+  })
 
   const [error, setError] = useState('')
   const [viewState, dispatch] = useReducer(
@@ -21,15 +25,42 @@ export default function Cartograph() {
   )
 
   useEffect(() => {
-    canvasRef.current.width = viewState.mapSize[0]
-    canvasRef.current.height = viewState.mapSize[1]
-    if (viewState.mapSize[0] <= 1) return
-    const cartographWebGL = new CartographWebGL(
-      canvasRef.current,
-      setError,
+    const modelViewMatrix = mat4.create()
+    mat4.translate(modelViewMatrix, modelViewMatrix, [
+      -viewState.offset[0] / 256,
+      -viewState.offset[1] / 256,
+      -6,
+    ])
+    matricesRef.current.modelViewMatrix = modelViewMatrix
+  }, [viewState.offset])
+
+  useEffect(() => {
+    const projectionMatrix = mat4.create()
+    mat4.ortho(
+      projectionMatrix,
+      0,
+      viewState.mapSize[0] / 256,
+      viewState.mapSize[1] / 256,
+      0,
+      0.1,
+      100.0,
     )
-    cartographWebGL.animationFrame()
-    return () => cartographWebGL.teardown()
+    matricesRef.current.projectionMatrix = projectionMatrix
+  }, [viewState.mapSize])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const matrices = matricesRef.current
+    if (viewState.mapSize[0] <= 1) return
+    canvas.width = viewState.mapSize[0]
+    canvas.height = viewState.mapSize[1]
+
+    const cartographWebGL = new CartographWebGL(canvas, matrices, setError)
+    function animationFrame() {
+      cartographWebGL.animationFrame()
+      requestAnimationFrame(animationFrame)
+    }
+    animationFrame()
   }, [viewState.mapSize])
 
   return (
@@ -68,6 +99,7 @@ interface CartographWebGLContext {
   aVertexColorLocation: number
   aVertexPositionLocation: number
   colorBuffer: WebGLBuffer
+  matrices: { modelViewMatrix: any; projectionMatrix: any }
   gl: WebGLRenderingContext
   positionBuffer: WebGLBuffer
   program: WebGLProgram
@@ -79,6 +111,7 @@ class CartographWebGL {
   context?: CartographWebGLContext
   constructor(
     canvas: HTMLCanvasElement,
+    matrices: { modelViewMatrix: any; projectionMatrix: any },
     onError: (message: string) => void,
   ) {
     const gl = canvas.getContext('webgl')
@@ -90,13 +123,16 @@ class CartographWebGL {
     }
 
     try {
-      this.context = this.initializeContext(gl)
+      this.context = this.initializeContext(gl, matrices)
     } catch (error) {
       onError((error as Error).message)
     }
   }
 
-  initializeContext(gl: WebGLRenderingContext) {
+  initializeContext(
+    gl: WebGLRenderingContext,
+    matrices: { modelViewMatrix: any; projectionMatrix: any },
+  ) {
     const vertexShader = createShader(
       gl,
       gl.VERTEX_SHADER,
@@ -159,9 +195,9 @@ class CartographWebGL {
       new Float32Array(
         [
           [1.0, 1.0],
-          [-1.0, 1.0],
-          [1.0, -1.0],
-          [-1.0, -1.0],
+          [0.0, 1.0],
+          [1.0, 0.0],
+          [0.0, 0.0],
         ].flat(),
       ),
       gl.STATIC_DRAW,
@@ -187,6 +223,7 @@ class CartographWebGL {
       aVertexPositionLocation,
       colorBuffer,
       gl,
+      matrices,
       positionBuffer,
       program,
       uModelViewMatrix,
@@ -202,6 +239,7 @@ class CartographWebGL {
       aVertexPositionLocation,
       colorBuffer,
       gl,
+      matrices: { modelViewMatrix, projectionMatrix },
       positionBuffer,
       program,
       uModelViewMatrix,
@@ -213,18 +251,6 @@ class CartographWebGL {
     gl.enable(gl.DEPTH_TEST)
     gl.depthFunc(gl.LEQUAL)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
-    const projectionMatrix = mat4.create()
-    mat4.perspective(
-      projectionMatrix,
-      (45 * Math.PI) / 180,
-      gl.canvas.clientWidth / gl.canvas.clientHeight,
-      0.1,
-      100.0,
-    )
-
-    const modelViewMatrix = mat4.create()
-    mat4.translate(modelViewMatrix, modelViewMatrix, [-0, 0, -6])
 
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.vertexAttribPointer(
@@ -247,8 +273,6 @@ class CartographWebGL {
     gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix)
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
   }
-
-  teardown() {}
 }
 
 function createShader(
