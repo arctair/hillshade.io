@@ -82,7 +82,10 @@ export default function Cartograph() {
       ) {
         const queryString = `lyrs=y&hl=en&x=${x}&y=${y}&z=${zoomFloor}`
         const url = `https://mt0.google.com/vt/${queryString}`
-        if (tiles.every((tile) => tile.url !== url)) {
+        const isTileNotPresent = tiles.every((tile) => tile.url !== url)
+
+        if (isTileNotPresent) {
+          const texture = loadTexture(gl, url)!
           tiles.push({
             url,
             left: x * scaleFloor,
@@ -90,10 +93,7 @@ export default function Cartograph() {
             right: (x + 1) * scaleFloor,
             bottom: (y + 1) * scaleFloor,
             zoom: zoomFloor,
-            texture: loadTexture(
-              gl,
-              `https://mt0.google.com/vt/${queryString}`,
-            )!,
+            texture,
           })
           tilesRefVersion.current++
         }
