@@ -43,8 +43,8 @@ export default function MapControls({ onEvent }: MapControlsProps) {
           onEvent(
             createPanAction({
               deltaXY: [
-                (lastPointerPositition[0] - pointerPosition[0]) / 256,
-                (lastPointerPositition[1] - pointerPosition[1]) / 256,
+                lastPointerPositition[0] - pointerPosition[0],
+                lastPointerPositition[1] - pointerPosition[1],
               ],
             }),
           )
