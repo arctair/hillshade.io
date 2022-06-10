@@ -110,11 +110,23 @@ function zoom(
 }
 
 type Extent = [number, number, number, number]
-export function selectExtent({
+export function selectGLExtent({
   mapSize: [width, height],
-  offset: [x, y],
+  offset: [left, top],
   zoom,
 }: ViewState): Extent {
-  const scale = Math.pow(2, zoom)
-  return [x, x + width / scale / 256, y + height / scale / 256, y]
+  const scaleMod = Math.pow(2, shiftmod(zoom))
+  const glTileSize = Math.pow(2, -zoom)
+  const glLeft = shiftmod(left / glTileSize)
+  const glTop = shiftmod(top / glTileSize)
+  return [
+    glLeft,
+    glLeft + width / 256 / scaleMod,
+    glTop + height / 256 / scaleMod,
+    glTop,
+  ]
+}
+
+function shiftmod(value: number) {
+  return ((value % 1) + 1) % 1
 }

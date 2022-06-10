@@ -2,7 +2,7 @@ import ViewState, {
   createPanAction,
   createResizeAction,
   createZoomAction,
-  selectExtent,
+  selectGLExtent,
   viewStateReducer,
 } from './ViewState'
 
@@ -94,25 +94,70 @@ describe('zoom', () => {
   })
 })
 
-describe('selectExtent', () => {
-  test('select default extent', () => {
+describe('selectGLExtent', () => {
+  test('select default gl extent', () => {
     expect(
-      selectExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 0 }),
+      selectGLExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 0 }),
     ).toStrictEqual([0, 1920 / 256, 1080 / 256, 0])
   })
-  test('select zoomed extent', () => {
+  test('select offset gl extent', () => {
     expect(
-      selectExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 1 }),
-    ).toStrictEqual([0, 1920 / 512, 1080 / 512, 0])
+      selectGLExtent({
+        mapSize: [1920, 1080],
+        offset: [1.5, 2.75],
+        zoom: 0,
+      }),
+    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.75 + 1080 / 256, 0.75])
   })
-  test('select zoomed extent hdpi', () => {
+  test('select offset zoomed gl extent', () => {
     expect(
-      selectExtent({ mapSize: [3840, 2160], offset: [0, 0], zoom: 1 }),
-    ).toStrictEqual([0, 3840 / 512, 2160 / 512, 0])
+      selectGLExtent({
+        mapSize: [1920, 1080],
+        offset: [0.75, 1.25],
+        zoom: 1,
+      }),
+    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.5 + 1080 / 256, 0.5])
   })
-  test('select offset extent', () => {
+  test('select negative offset gl extent', () => {
     expect(
-      selectExtent({ mapSize: [1920, 1080], offset: [1, 2], zoom: 0 }),
-    ).toStrictEqual([1, 1 + 1920 / 256, 2 + 1080 / 256, 2])
+      selectGLExtent({
+        mapSize: [1920, 1080],
+        offset: [-1.5, -2.75],
+        zoom: 0,
+      }),
+    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.25 + 1080 / 256, 0.25])
+  })
+  test('select zoomed half-level gl extent', () => {
+    expect(
+      selectGLExtent({
+        mapSize: [1920, 1080],
+        offset: [0, 0],
+        zoom: 0.75,
+      }),
+    ).toStrictEqual([
+      0,
+      1920 / 256 / Math.pow(2, 0.75),
+      1080 / 256 / Math.pow(2, 0.75),
+      0,
+    ])
+  })
+  test('select zoomed full-level gl extent', () => {
+    expect(
+      selectGLExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 1 }),
+    ).toStrictEqual([0, 1920 / 256, 1080 / 256, 0])
+  })
+  test('select negative zoomed half-level gl extent', () => {
+    expect(
+      selectGLExtent({
+        mapSize: [1920, 1080],
+        offset: [0, 0],
+        zoom: -0.75,
+      }),
+    ).toStrictEqual([
+      0,
+      1920 / 256 / Math.pow(2, 0.25),
+      1080 / 256 / Math.pow(2, 0.25),
+      0,
+    ])
   })
 })

@@ -8,7 +8,7 @@ import {
 import MapControls from './MapControls'
 import {
   defaultViewState,
-  selectExtent,
+  selectGLExtent,
   viewStateReducer,
 } from './ViewState'
 
@@ -36,7 +36,7 @@ export default function Cartograph() {
 
   useEffect(() => {
     const projectionMatrix = mat4.create()
-    mat4.ortho(projectionMatrix, ...selectExtent(viewState), 0.1, 100.0)
+    mat4.ortho(projectionMatrix, ...selectGLExtent(viewState), 0.1, 100.0)
     matricesRef.current.projectionMatrix = projectionMatrix
   }, [viewState])
 
@@ -93,6 +93,8 @@ interface CartographWebGLContext {
   colorBuffer: WebGLBuffer
   matrices: { modelViewMatrix: any; projectionMatrix: any }
   gl: WebGLRenderingContext
+  indexBuffer: WebGLBuffer
+  indexCount: number
   positionBuffer: WebGLBuffer
   program: WebGLProgram
   uModelViewMatrix: WebGLUniformLocation
@@ -180,18 +182,40 @@ class CartographWebGL {
       'uModelViewMatrix',
     )
 
+    let positions = new Array<number>()
+    let colors = new Array<number>()
+    let indices = new Array<number>()
+    for (let left = 0; left < gl.canvas.width / 256 + 1; left++) {
+      for (let top = 0; top < gl.canvas.height / 256 + 1; top++) {
+        const index = positions.length / 2
+        positions = positions.concat(
+          [left + 1, top + 1],
+          [left, top + 1],
+          [left + 1, top],
+          [left, top],
+        )
+        colors = colors.concat(
+          [1.0, 1.0, 1.0, 1.0],
+          [1.0, 0.0, 0.0, 1.0],
+          [0.0, 1.0, 0.0, 1.0],
+          [0.0, 0.0, 1.0, 1.0],
+        )
+        indices = indices.concat(
+          index,
+          index + 1,
+          index + 2,
+          index + 1,
+          index + 3,
+          index + 2,
+        )
+      }
+    }
+
     const positionBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array(
-        [
-          [1.0, 1.0],
-          [0.0, 1.0],
-          [1.0, 0.0],
-          [0.0, 0.0],
-        ].flat(),
-      ),
+      new Float32Array(positions),
       gl.STATIC_DRAW,
     )
 
@@ -199,14 +223,15 @@ class CartographWebGL {
     gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array(
-        [
-          [1.0, 1.0, 1.0, 1.0],
-          [1.0, 0.0, 0.0, 1.0],
-          [0.0, 1.0, 0.0, 1.0],
-          [0.0, 0.0, 1.0, 1.0],
-        ].flat(),
-      ),
+      new Float32Array(colors),
+      gl.STATIC_DRAW,
+    )
+
+    const indexBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+    gl.bufferData(
+      gl.ELEMENT_ARRAY_BUFFER,
+      new Uint16Array(indices),
       gl.STATIC_DRAW,
     )
 
@@ -215,6 +240,8 @@ class CartographWebGL {
       aVertexPositionLocation,
       colorBuffer,
       gl,
+      indexBuffer,
+      indexCount: indices.length,
       matrices,
       positionBuffer,
       program,
@@ -231,6 +258,8 @@ class CartographWebGL {
       aVertexPositionLocation,
       colorBuffer,
       gl,
+      indexBuffer,
+      indexCount,
       matrices: { modelViewMatrix, projectionMatrix },
       positionBuffer,
       program,
@@ -263,7 +292,9 @@ class CartographWebGL {
 
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix)
     gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix)
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
+    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0)
   }
 }
 
