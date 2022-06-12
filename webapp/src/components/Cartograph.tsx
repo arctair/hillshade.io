@@ -18,6 +18,7 @@ const mat4 = require('gl-mat4')
 interface Context {
   modelViewMatrix: any
   projectionMatrix: any
+  tiles: Array<{ url?: string }>
 }
 
 export default function Cartograph() {
@@ -26,6 +27,7 @@ export default function Cartograph() {
   const contextRef = useRef<Context>({
     modelViewMatrix: mat4.create(),
     projectionMatrix: mat4.create(),
+    tiles: [],
   })
 
   const [error, setError] = useState('')
@@ -45,6 +47,23 @@ export default function Cartograph() {
     const extent = selectGLExtent2D(viewState)
     mat4.ortho(projectionMatrix, ...extent, 0.1, 100.0)
     contextRef.current.projectionMatrix = projectionMatrix
+
+    const tiles = []
+    let [left, right, bottom, top] = selectTileExtent2D(viewState)
+    const z = Math.floor(viewState.zoom)
+    const tileCount = Math.pow(2, z)
+    for (let x = left; x < right; x++) {
+      for (let y = top; y < bottom; y++) {
+        const isInBounds =
+          x >= 0 && x < tileCount && y >= 0 && y < tileCount && z < 23
+        tiles.push({
+          url: isInBounds
+            ? `http://mt0.google.com/vt/lyrs=y&hl=en&x=${x}&y=${y}&z=${z}`
+            : undefined,
+        })
+      }
+    }
+    contextRef.current.tiles = tiles
   }, [viewState])
 
   useEffect(() => {
@@ -95,17 +114,18 @@ export default function Cartograph() {
 }
 
 interface CartographWebGLFields {
-  aVertexColorLocation: number
+  aTextureCoordinateLocation: number
   aVertexPositionLocation: number
-  colorBuffer: WebGLBuffer
   context: Context
   gl: WebGLRenderingContext
   indexBuffer: WebGLBuffer
-  indexCount: number
   positionBuffer: WebGLBuffer
   program: WebGLProgram
-  uModelViewMatrix: WebGLUniformLocation
+  textureCoordinateBuffer: WebGLBuffer
+  texturesByURL: Map<String, WebGLTexture>
+  uModelViewMatrixLocation: WebGLUniformLocation
   uProjectionMatrixLocation: WebGLUniformLocation
+  uSamplerLocation: WebGLUniformLocation
 }
 
 class CartographWebGL {
@@ -135,26 +155,28 @@ class CartographWebGL {
       gl,
       gl.VERTEX_SHADER,
       ` attribute vec4 aVertexPosition;
-        attribute vec4 aVertexColor;
+        attribute vec2 aTextureCoordinate;
 
         uniform mat4 uModelViewMatrix;
         uniform mat4 uProjectionMatrix;
 
-        varying lowp vec4 vColor;
+        varying highp vec2 vTextureCoordinate;
 
         void main() {
           gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-          vColor = aVertexColor;
+          vTextureCoordinate = aTextureCoordinate;
         }`,
     )
 
     const fragmentShader = createShader(
       gl,
       gl.FRAGMENT_SHADER,
-      ` varying lowp vec4 vColor;
+      ` varying highp vec2 vTextureCoordinate;
+        
+        uniform sampler2D uSampler;
 
         void main() {
-          gl_FragColor = vColor;
+          gl_FragColor = texture2D(uSampler, vTextureCoordinate);
         }`,
     )
 
@@ -173,21 +195,22 @@ class CartographWebGL {
       program,
       'aVertexPosition',
     )
-    const aVertexColorLocation = gl.getAttribLocation(
+    const aTextureCoordinateLocation = gl.getAttribLocation(
       program,
-      'aVertexColor',
+      'aTextureCoordinate',
     )
     const uProjectionMatrixLocation = gl.getUniformLocation(
       program,
       'uProjectionMatrix',
     )
-    const uModelViewMatrix = gl.getUniformLocation(
+    const uModelViewMatrixLocation = gl.getUniformLocation(
       program,
       'uModelViewMatrix',
     )
+    const uSamplerLocation = gl.getUniformLocation(program, 'uSampler')
 
     let positions = new Array<number>()
-    let colors = new Array<number>()
+    let textureCoordinates = new Array<number>()
     let indices = new Array<number>()
     for (let left = 0; left < gl.canvas.width / 256 + 1; left++) {
       for (let top = 0; top < gl.canvas.height / 256 + 1; top++) {
@@ -198,11 +221,11 @@ class CartographWebGL {
           [left + 1, top],
           [left, top],
         )
-        colors = colors.concat(
-          [1.0, 1.0, 1.0, 1.0],
-          [1.0, 0.0, 0.0, 1.0],
-          [0.0, 1.0, 0.0, 1.0],
-          [0.0, 0.0, 1.0, 1.0],
+        textureCoordinates = textureCoordinates.concat(
+          [1.0, 1.0],
+          [0.0, 1.0],
+          [1.0, 0.0],
+          [0.0, 0.0],
         )
         indices = indices.concat(
           index,
@@ -223,11 +246,11 @@ class CartographWebGL {
       gl.STATIC_DRAW,
     )
 
-    const colorBuffer = gl.createBuffer()
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+    const textureCoordinateBuffer = gl.createBuffer()
+    gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordinateBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
-      new Float32Array(colors),
+      new Float32Array(textureCoordinates),
       gl.STATIC_DRAW,
     )
 
@@ -240,35 +263,37 @@ class CartographWebGL {
     )
 
     return {
-      aVertexColorLocation,
+      aTextureCoordinateLocation,
       aVertexPositionLocation,
-      colorBuffer,
+      context,
       gl,
       indexBuffer,
-      indexCount: indices.length,
-      context,
       positionBuffer,
       program,
-      uModelViewMatrix,
+      textureCoordinateBuffer,
+      texturesByURL: new Map(),
+      uModelViewMatrixLocation,
       uProjectionMatrixLocation,
+      uSamplerLocation,
     } as CartographWebGLFields
   }
 
   animationFrame() {
-    if (!this.fields) throw Error('Context has not been initialized')
+    if (!this.fields) return
 
     const {
-      aVertexColorLocation,
+      aTextureCoordinateLocation,
       aVertexPositionLocation,
-      colorBuffer,
+      textureCoordinateBuffer,
+      context: { modelViewMatrix, projectionMatrix, tiles },
       gl,
       indexBuffer,
-      indexCount,
-      context: { modelViewMatrix, projectionMatrix },
       positionBuffer,
       program,
-      uModelViewMatrix,
+      texturesByURL,
+      uModelViewMatrixLocation,
       uProjectionMatrixLocation,
+      uSamplerLocation,
     } = this.fields
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
@@ -288,17 +313,38 @@ class CartographWebGL {
     )
     gl.enableVertexAttribArray(aVertexPositionLocation)
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-    gl.vertexAttribPointer(aVertexColorLocation, 4, gl.FLOAT, false, 0, 0)
-    gl.enableVertexAttribArray(aVertexColorLocation)
+    gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordinateBuffer)
+    gl.vertexAttribPointer(
+      aTextureCoordinateLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0,
+    )
+    gl.enableVertexAttribArray(aTextureCoordinateLocation)
 
     gl.useProgram(program)
 
     gl.uniformMatrix4fv(uProjectionMatrixLocation, false, projectionMatrix)
-    gl.uniformMatrix4fv(uModelViewMatrix, false, modelViewMatrix)
+    gl.uniformMatrix4fv(uModelViewMatrixLocation, false, modelViewMatrix)
 
+    gl.activeTexture(gl.TEXTURE0)
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
-    gl.drawElements(gl.TRIANGLES, indexCount, gl.UNSIGNED_SHORT, 0)
+    tiles.forEach(({ url }, i) => {
+      if (!url) return
+
+      let texture
+      if (texturesByURL.has(url)) {
+        texture = texturesByURL.get(url)!
+      } else {
+        texture = loadTexture(gl, url)
+        texturesByURL.set(url, texture)
+      }
+      gl.bindTexture(gl.TEXTURE_2D, texture)
+      gl.uniform1i(uSamplerLocation, 0)
+      gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, i * 12)
+    })
   }
 }
 
@@ -319,4 +365,37 @@ function createShader(
   }
 
   return shader
+}
+
+function loadTexture(gl: WebGLRenderingContext, url: string) {
+  const texture = gl.createTexture()!
+  gl.bindTexture(gl.TEXTURE_2D, texture)
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    1,
+    1,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    new Uint8Array([0, 0, 0, 255]),
+  )
+
+  const image = new Image()
+  image.onload = function () {
+    gl.bindTexture(gl.TEXTURE_2D, texture)
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      image,
+    )
+    gl.generateMipmap(gl.TEXTURE_2D)
+  }
+  image.crossOrigin = 'anonymous'
+  image.src = url
+  return texture
 }

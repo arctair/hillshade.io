@@ -6,8 +6,8 @@ export default interface ViewState {
 
 export const defaultViewState: ViewState = {
   mapSize: [1, 1],
-  offset: [0, 0],
-  zoom: 0,
+  offset: [330 / Math.pow(2, 11), 715 / Math.pow(2, 11)],
+  zoom: 11,
 }
 
 export type ViewStateAction = PanAction | ResizeAction | ZoomAction
@@ -136,4 +136,36 @@ export function selectGLExtent1D({
 
 function modabove(value: number, threshold = 1) {
   return ((value % threshold) + threshold) % threshold
+}
+
+export function selectTileExtent2D({
+  mapSize: [width, height],
+  offset: [x, y],
+  zoom,
+}: ViewState): [number, number, number, number] {
+  const [left, right] = selectTileExtent1D({
+    size: width,
+    offset: x,
+    zoom,
+  })
+  const [top, bottom] = selectTileExtent1D({
+    size: height,
+    offset: y,
+    zoom,
+  })
+  return [left, right, bottom, top]
+}
+
+export function selectTileExtent1D({
+  size,
+  offset,
+  zoom,
+}: {
+  size: number
+  offset: number
+  zoom: number
+}) {
+  const tileCount = Math.pow(2, Math.floor(zoom))
+  const offsetFloor = Math.floor(offset * tileCount)
+  return [offsetFloor, offsetFloor + size / 256 + 1]
 }
