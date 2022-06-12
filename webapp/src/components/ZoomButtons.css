@@ -1,0 +1,22 @@
+.zoom-button-container {
+  display: inline-flex;
+  flex-direction: column;
+  padding: 0.25rem;
+}
+
+.zoom-button {
+  flex: 1;
+  border-radius: 0;
+  font-size: 2rem;
+  width: 2.5rem;
+}
+
+.zoom-button:first-child {
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.zoom-button:last-child {
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+}

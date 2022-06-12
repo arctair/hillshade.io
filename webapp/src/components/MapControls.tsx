@@ -5,6 +5,7 @@ import {
   createZoomAction,
   ViewStateAction,
 } from './ViewState'
+import ZoomButtons from './ZoomButtons'
 
 type MapControlsProps = {
   onEvent: (value: ViewStateAction) => void
@@ -31,7 +32,12 @@ export default function MapControls({ onEvent }: MapControlsProps) {
   return (
     <div
       ref={ref}
-      style={{ height: '100%', touchAction: 'none' }}
+      style={{
+        height: '100%',
+        touchAction: 'none',
+        display: 'grid',
+        gridAutoColumns: '1fr auto',
+      }}
       onPointerDown={(e) => {
         lastPointerPositionRef.current = [e.clientX, e.clientY]
       }}
@@ -63,6 +69,22 @@ export default function MapControls({ onEvent }: MapControlsProps) {
           }),
         )
       }
-    />
+    >
+      <div style={{ gridColumn: '2' }}>
+        <ZoomButtons
+          onZoom={(deltaZ) =>
+            onEvent(
+              createZoomAction({
+                deltaZ,
+                pointerXY: [
+                  ref.current.offsetWidth / 2,
+                  ref.current.offsetHeight / 2,
+                ],
+              }),
+            )
+          }
+        />
+      </div>
+    </div>
   )
 }
