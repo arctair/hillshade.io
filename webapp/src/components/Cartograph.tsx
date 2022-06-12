@@ -17,7 +17,7 @@ const mat4 = require('gl-mat4')
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
-  const matricesRef = useRef({
+  const contextRef = useRef({
     modelViewMatrix: mat4.create(),
     projectionMatrix: mat4.create(),
   })
@@ -31,19 +31,19 @@ export default function Cartograph() {
   useEffect(() => {
     const modelViewMatrix = mat4.create()
     mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6])
-    matricesRef.current.modelViewMatrix = modelViewMatrix
+    contextRef.current.modelViewMatrix = modelViewMatrix
   }, [])
 
   useEffect(() => {
     const projectionMatrix = mat4.create()
     const extent = selectGLExtent2D(viewState)
     mat4.ortho(projectionMatrix, ...extent, 0.1, 100.0)
-    matricesRef.current.projectionMatrix = projectionMatrix
+    contextRef.current.projectionMatrix = projectionMatrix
   }, [viewState])
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const matrices = matricesRef.current
+    const matrices = contextRef.current
     if (viewState.mapSize[0] <= 1) return
     canvas.width = viewState.mapSize[0]
     canvas.height = viewState.mapSize[1]
@@ -88,11 +88,11 @@ export default function Cartograph() {
   )
 }
 
-interface CartographWebGLContext {
+interface CartographWebGLFields {
   aVertexColorLocation: number
   aVertexPositionLocation: number
   colorBuffer: WebGLBuffer
-  matrices: { modelViewMatrix: any; projectionMatrix: any }
+  context: { modelViewMatrix: any; projectionMatrix: any }
   gl: WebGLRenderingContext
   indexBuffer: WebGLBuffer
   indexCount: number
@@ -103,10 +103,10 @@ interface CartographWebGLContext {
 }
 
 class CartographWebGL {
-  context?: CartographWebGLContext
+  fields?: CartographWebGLFields
   constructor(
     canvas: HTMLCanvasElement,
-    matrices: { modelViewMatrix: any; projectionMatrix: any },
+    context: { modelViewMatrix: any; projectionMatrix: any },
     onError: (message: string) => void,
   ) {
     const gl = canvas.getContext('webgl')
@@ -118,15 +118,15 @@ class CartographWebGL {
     }
 
     try {
-      this.context = this.initializeContext(gl, matrices)
+      this.fields = this.initializeFields(gl, context)
     } catch (error) {
       onError((error as Error).message)
     }
   }
 
-  initializeContext(
+  initializeFields(
     gl: WebGLRenderingContext,
-    matrices: { modelViewMatrix: any; projectionMatrix: any },
+    context: { modelViewMatrix: any; projectionMatrix: any },
   ) {
     const vertexShader = createShader(
       gl,
@@ -243,16 +243,16 @@ class CartographWebGL {
       gl,
       indexBuffer,
       indexCount: indices.length,
-      matrices,
+      context,
       positionBuffer,
       program,
       uModelViewMatrix,
       uProjectionMatrixLocation,
-    } as CartographWebGLContext
+    } as CartographWebGLFields
   }
 
   animationFrame() {
-    if (!this.context) throw Error('Context has not been initialized')
+    if (!this.fields) throw Error('Context has not been initialized')
 
     const {
       aVertexColorLocation,
@@ -261,12 +261,12 @@ class CartographWebGL {
       gl,
       indexBuffer,
       indexCount,
-      matrices: { modelViewMatrix, projectionMatrix },
+      context: { modelViewMatrix, projectionMatrix },
       positionBuffer,
       program,
       uModelViewMatrix,
       uProjectionMatrixLocation,
-    } = this.context
+    } = this.fields
 
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
     gl.clearDepth(1.0)
