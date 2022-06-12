@@ -120,12 +120,6 @@ describe('selectGLExtent1D', () => {
     const expected = [0, 4 / Math.pow(2, 0.25)]
     expect(actual).toStrictEqual(expected)
   })
-  test('full zoom level', () => {
-    const view = { size: 1024, offset: 0, zoom: 1 }
-    const actual = selectGLExtent1D(view)
-    const expected = [0, 4]
-    expect(actual).toStrictEqual(expected)
-  })
   test('different screen size', () => {
     const view = { size: 3840, offset: 0, zoom: 0.25 }
     const actual = selectGLExtent1D(view)
@@ -144,8 +138,20 @@ describe('selectGLExtent1D', () => {
     const expected = [0, 4]
     expect(actual).toStrictEqual(expected)
   })
-  test('offset by full zoomed z-tile', () => {
+  test('full offset by full zoomed z-tile', () => {
     const view = { size: 1024, offset: 0.5, zoom: 1 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4]
+    expect(actual).toStrictEqual(expected)
+  })
+  test('partial offset by full zoomed z-tile', () => {
+    const view = { size: 1024, offset: 0.25, zoom: 1 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0.5, 4.5]
+    expect(actual).toStrictEqual(expected)
+  })
+  test('full zoom level', () => {
+    const view = { size: 1024, offset: 0, zoom: 1 }
     const actual = selectGLExtent1D(view)
     const expected = [0, 4]
     expect(actual).toStrictEqual(expected)

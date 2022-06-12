@@ -129,11 +129,9 @@ export function selectGLExtent1D({
   zoom: number
 }): [number, number] {
   const zTileSize = Math.pow(2, -Math.floor(zoom))
-  const distanceFromBaseline = modabove(offset, zTileSize)
-  return [
-    distanceFromBaseline,
-    distanceFromBaseline + size / 256 / Math.pow(2, modabove(zoom)),
-  ]
+  const glStart = modabove(offset, zTileSize) / zTileSize
+  const glSize = size / 256 / Math.pow(2, modabove(zoom))
+  return [glStart, glStart + glSize]
 }
 
 function modabove(value: number, threshold = 1) {
