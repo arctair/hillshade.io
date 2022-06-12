@@ -109,24 +109,33 @@ function zoom(
   }
 }
 
-type Extent = [number, number, number, number]
-export function selectGLExtent({
+export function selectGLExtent2D({
   mapSize: [width, height],
-  offset: [left, top],
+  offset: [x, y],
   zoom,
-}: ViewState): Extent {
-  const scaleMod = Math.pow(2, shiftmod(zoom))
-  const glTileSize = Math.pow(2, -zoom)
-  const glLeft = shiftmod(left / glTileSize)
-  const glTop = shiftmod(top / glTileSize)
+}: ViewState): [number, number, number, number] {
+  const [left, right] = selectGLExtent1D({ size: width, offset: x, zoom })
+  const [top, bottom] = selectGLExtent1D({ size: height, offset: y, zoom })
+  return [left, right, bottom, top]
+}
+
+export function selectGLExtent1D({
+  size,
+  offset,
+  zoom,
+}: {
+  size: number
+  offset: number
+  zoom: number
+}): [number, number] {
+  const zTileSize = Math.pow(2, -Math.floor(zoom))
+  const distanceFromBaseline = modabove(offset, zTileSize)
   return [
-    glLeft,
-    glLeft + width / 256 / scaleMod,
-    glTop + height / 256 / scaleMod,
-    glTop,
+    distanceFromBaseline,
+    distanceFromBaseline + size / 256 / Math.pow(2, modabove(zoom)),
   ]
 }
 
-function shiftmod(value: number) {
-  return ((value % 1) + 1) % 1
+function modabove(value: number, threshold = 1) {
+  return ((value % threshold) + threshold) % threshold
 }

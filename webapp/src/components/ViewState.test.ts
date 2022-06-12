@@ -1,8 +1,8 @@
-import ViewState, {
+import {
   createPanAction,
   createResizeAction,
   createZoomAction,
-  selectGLExtent,
+  selectGLExtent1D,
   viewStateReducer,
 } from './ViewState'
 
@@ -17,6 +17,19 @@ describe('pan', () => {
       mapSize: [1920, 1080],
       offset: [-1, 2],
       zoom: 0,
+    })
+  })
+
+  test('when zoom is one quarter', () => {
+    expect(
+      viewStateReducer(
+        { mapSize: [1920, 1080], offset: [1, 0], zoom: 0.25 },
+        createPanAction({ deltaXY: [256 * Math.pow(2, 0.25), 0] }),
+      ),
+    ).toStrictEqual({
+      mapSize: [1920, 1080],
+      offset: [2, 0],
+      zoom: 0.25,
     })
   })
 
@@ -94,70 +107,47 @@ describe('zoom', () => {
   })
 })
 
-describe('selectGLExtent', () => {
-  test('select default gl extent', () => {
-    expect(
-      selectGLExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 0 }),
-    ).toStrictEqual([0, 1920 / 256, 1080 / 256, 0])
+describe('selectGLExtent1D', () => {
+  test('default view', () => {
+    const view = { size: 1024, offset: 0, zoom: 0 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select offset gl extent', () => {
-    expect(
-      selectGLExtent({
-        mapSize: [1920, 1080],
-        offset: [1.5, 2.75],
-        zoom: 0,
-      }),
-    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.75 + 1080 / 256, 0.75])
+  test('partial zoom level', () => {
+    const view = { size: 1024, offset: 1, zoom: 0.25 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4 / Math.pow(2, 0.25)]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select offset zoomed gl extent', () => {
-    expect(
-      selectGLExtent({
-        mapSize: [1920, 1080],
-        offset: [0.75, 1.25],
-        zoom: 1,
-      }),
-    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.5 + 1080 / 256, 0.5])
+  test('full zoom level', () => {
+    const view = { size: 1024, offset: 0, zoom: 1 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select negative offset gl extent', () => {
-    expect(
-      selectGLExtent({
-        mapSize: [1920, 1080],
-        offset: [-1.5, -2.75],
-        zoom: 0,
-      }),
-    ).toStrictEqual([0.5, 0.5 + 1920 / 256, 0.25 + 1080 / 256, 0.25])
+  test('different screen size', () => {
+    const view = { size: 3840, offset: 0, zoom: 0.25 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 3840 / 256 / Math.pow(2, 0.25)]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select zoomed half-level gl extent', () => {
-    expect(
-      selectGLExtent({
-        mapSize: [1920, 1080],
-        offset: [0, 0],
-        zoom: 0.75,
-      }),
-    ).toStrictEqual([
-      0,
-      1920 / 256 / Math.pow(2, 0.75),
-      1080 / 256 / Math.pow(2, 0.75),
-      0,
-    ])
+  test('offset by partial z-tile', () => {
+    const view = { size: 1024, offset: 0.5, zoom: 0 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0.5, 4.5]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select zoomed full-level gl extent', () => {
-    expect(
-      selectGLExtent({ mapSize: [1920, 1080], offset: [0, 0], zoom: 1 }),
-    ).toStrictEqual([0, 1920 / 256, 1080 / 256, 0])
+  test('offset by full z-tile', () => {
+    const view = { size: 1024, offset: 1, zoom: 0 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4]
+    expect(actual).toStrictEqual(expected)
   })
-  test('select negative zoomed half-level gl extent', () => {
-    expect(
-      selectGLExtent({
-        mapSize: [1920, 1080],
-        offset: [0, 0],
-        zoom: -0.75,
-      }),
-    ).toStrictEqual([
-      0,
-      1920 / 256 / Math.pow(2, 0.25),
-      1080 / 256 / Math.pow(2, 0.25),
-      0,
-    ])
+  test('offset by full zoomed z-tile', () => {
+    const view = { size: 1024, offset: 0.5, zoom: 1 }
+    const actual = selectGLExtent1D(view)
+    const expected = [0, 4]
+    expect(actual).toStrictEqual(expected)
   })
 })

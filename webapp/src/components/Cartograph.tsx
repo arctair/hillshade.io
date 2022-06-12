@@ -8,7 +8,7 @@ import {
 import MapControls from './MapControls'
 import {
   defaultViewState,
-  selectGLExtent,
+  selectGLExtent2D,
   viewStateReducer,
 } from './ViewState'
 
@@ -36,7 +36,8 @@ export default function Cartograph() {
 
   useEffect(() => {
     const projectionMatrix = mat4.create()
-    mat4.ortho(projectionMatrix, ...selectGLExtent(viewState), 0.1, 100.0)
+    const extent = selectGLExtent2D(viewState)
+    mat4.ortho(projectionMatrix, ...extent, 0.1, 100.0)
     matricesRef.current.projectionMatrix = projectionMatrix
   }, [viewState])
 
