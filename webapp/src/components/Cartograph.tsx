@@ -9,15 +9,21 @@ import MapControls from './MapControls'
 import {
   defaultViewState,
   selectGLExtent2D,
+  selectTileExtent2D,
   viewStateReducer,
 } from './ViewState'
 
 const mat4 = require('gl-mat4')
 
+interface Context {
+  modelViewMatrix: any
+  projectionMatrix: any
+}
+
 export default function Cartograph() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
-  const contextRef = useRef({
+  const contextRef = useRef<Context>({
     modelViewMatrix: mat4.create(),
     projectionMatrix: mat4.create(),
   })
@@ -92,7 +98,7 @@ interface CartographWebGLFields {
   aVertexColorLocation: number
   aVertexPositionLocation: number
   colorBuffer: WebGLBuffer
-  context: { modelViewMatrix: any; projectionMatrix: any }
+  context: Context
   gl: WebGLRenderingContext
   indexBuffer: WebGLBuffer
   indexCount: number
@@ -106,7 +112,7 @@ class CartographWebGL {
   fields?: CartographWebGLFields
   constructor(
     canvas: HTMLCanvasElement,
-    context: { modelViewMatrix: any; projectionMatrix: any },
+    context: Context,
     onError: (message: string) => void,
   ) {
     const gl = canvas.getContext('webgl')
@@ -124,10 +130,7 @@ class CartographWebGL {
     }
   }
 
-  initializeFields(
-    gl: WebGLRenderingContext,
-    context: { modelViewMatrix: any; projectionMatrix: any },
-  ) {
+  initializeFields(gl: WebGLRenderingContext, context: Context) {
     const vertexShader = createShader(
       gl,
       gl.VERTEX_SHADER,
