@@ -2,7 +2,8 @@
 Description=api.hillshade.io
 
 [Service]
-ExecStart=/usr/bin/python -m waitress --port 8090 --call main.app:create_app
+Environment=PORT=8090
+ExecStart=/usr/local/bin/npm start
 Type=simple
 WorkingDirectory=/home/arctair/hillshade.io/api
 

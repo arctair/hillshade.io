@@ -1,6 +1,2 @@
-# hillshade.io/api
-## Run the tests
-```zsh
-. venv/bin/activate
-pytest
-```
+# api.hillshade.io
+layouts api will accept new layouts for heightmaps to be attached
