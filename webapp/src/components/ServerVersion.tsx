@@ -9,7 +9,8 @@ function useServerVersion() {
       try {
         const response = await fetch('https://api.hillshade.io')
         if (response.status >= 200 && response.status < 300) {
-          setVersion(await response.text())
+          const body = await response.json()
+          setVersion(body.version)
         } else {
           setError(response.statusText)
         }
