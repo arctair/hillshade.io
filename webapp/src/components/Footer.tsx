@@ -3,14 +3,20 @@ import Versions from './Versions'
 
 import './Footer.css'
 
+const gray = 'hsl(120, 10%, 30%)'
+const light = 'hsl(120, 5%, 75%)'
+
 export default function Footer() {
   return (
     <div
       style={{
         display: 'flex',
         justifyContent: 'right',
-        borderTop: '2.5px solid hsl(240, 20%, 70%)',
         padding: '0.125rem 0',
+        borderTop: `1px solid black`,
+        backgroundColor: gray,
+        fontWeight: 'bold',
+        color: light,
       }}
     >
       {window.location.href.match(

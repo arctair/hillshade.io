@@ -1,5 +1,5 @@
-const dark = 'hsl(120, 40%, 5%)'
-const gray = 'hsl(120, 10%, 40%)'
+const dark = 'hsl(120, 10%, 30%)'
+const gray = 'hsl(120, 10%, 30%)'
 const light = 'hsl(120, 5%, 75%)'
 
 export default function Sidebar() {
