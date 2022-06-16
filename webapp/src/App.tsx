@@ -1,5 +1,6 @@
 import Cartograph from './components/Cartograph'
 import Footer from './components/Footer'
+import Sidebar from './components/Sidebar'
 
 export default function App() {
   return (
@@ -8,12 +9,19 @@ export default function App() {
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        backgroundColor: 'hsl(120, 40%, 5%)',
-        color: 'hsl(120, 5%, 75%)',
       }}
     >
-      <div style={{ flex: 1 }}>
-        <Cartograph />
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <div
+          style={{ display: 'flex', flexDirection: 'row', height: '100%' }}
+        >
+          <div style={{ flex: 0 }}>
+            <Sidebar />
+          </div>
+          <div style={{ flex: 1 }}>
+            <Cartograph />
+          </div>
+        </div>
       </div>
       <div
         style={{
