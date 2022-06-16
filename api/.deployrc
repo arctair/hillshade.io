@@ -1,0 +1,5 @@
+#!/bin/zsh
+setopt verbose
+set -e
+scripts/deploy-yagni
+BASE_URL=https://api.hillshade.io npm test
