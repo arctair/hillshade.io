@@ -30,7 +30,11 @@ export default function Footer() {
       )}
       <Padding>
         <SimpleAnchor href="https://github.com/arctair/hillshade.io">
-          github
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/topcoat-icons/0.2.0/svg/github.svg"
+            alt="github"
+            style={{ height: '1rem', verticalAlign: 'middle' }}
+          />
         </SimpleAnchor>
       </Padding>
       <Versions wrapper={Padding} />
