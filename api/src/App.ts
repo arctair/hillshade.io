@@ -1,26 +1,13 @@
-import express, { Request, Response } from 'express'
-import { LayoutService } from './LayoutService'
+import express from 'express'
 
 export const createApp = (
-  version: string,
-  layoutService: LayoutService,
+  versionRouter: express.Router,
+  layoutRouter: express.Router,
 ) => {
   const app = express()
 
-  app.use(express.json())
-
-  app.get('/version', (_: Request, response: Response) =>
-    response.json({ version }),
-  )
-
-  app.get('/', (_: Request, response: Response) =>
-    response.json(layoutService.getAll()),
-  )
-
-  app.post('/', (request: Request, response: Response) => {
-    const layout = layoutService.create(request.body)
-    response.status(201).send(layout)
-  })
+  app.use('/', layoutRouter)
+  app.use('/', versionRouter)
 
   return app
 }
