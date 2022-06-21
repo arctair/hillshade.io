@@ -3,6 +3,8 @@ cat <<EOF | ssh yagni -T
     cd /home/arctair/hillshade.io
     git fetch
     git reset origin/main --hard
+    cd api
+    npm install
     systemctl daemon-reload --user
     systemctl restart api.hillshade.io --user
 EOF
