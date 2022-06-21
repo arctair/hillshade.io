@@ -1,11 +1,10 @@
-import nodeFetch from 'node-fetch'
-
-const baseURL = process.env.BASE_URL || 'http://localhost:8080'
+import request from 'supertest'
+import app from './app'
 
 describe('app', () => {
-  test('get version', async () => {
-    const response = await nodeFetch(baseURL)
-    const body = (await response.json()) as any
-    expect(body.version).toHaveLength(7)
+  test('get version', (done) => {
+    request(app('asddfgf'))
+      .get('/')
+      .expect(200, { version: 'asddfgf' }, done)
   })
 })
