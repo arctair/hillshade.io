@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express'
-import { LayoutService } from './LayoutService'
+import { LayoutStore } from './LayoutStore'
 import { LayoutValidity } from './LayoutValidity'
 
 export const createLayoutRouter = (
   layoutValidity: LayoutValidity,
-  layoutService: LayoutService,
+  layoutService: LayoutStore,
 ) => {
   const router = express.Router()
 
