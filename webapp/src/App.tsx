@@ -1,6 +1,7 @@
 import Cartograph from './components/Cartograph'
 import Footer from './components/Footer'
 import Sidebar from './components/Sidebar'
+import { Provider as ViewStateProvider } from './components/ViewState'
 
 export default function App() {
   return (
@@ -19,7 +20,9 @@ export default function App() {
             <Sidebar />
           </div>
           <div style={{ flex: 1 }}>
-            <Cartograph />
+            <ViewStateProvider>
+              <Cartograph />
+            </ViewStateProvider>
           </div>
         </div>
       </div>

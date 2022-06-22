@@ -1,16 +1,9 @@
-import {
-  MutableRefObject,
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-} from 'react'
+import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import MapControls from './MapControls'
 import {
-  defaultViewState,
   selectGLExtent2D,
   selectTileExtent2D,
-  viewStateReducer,
+  useViewState,
 } from './ViewState'
 
 const mat4 = require('gl-mat4')
@@ -31,10 +24,7 @@ export default function Cartograph() {
   })
 
   const [error, setError] = useState('')
-  const [viewState, dispatch] = useReducer(
-    viewStateReducer,
-    defaultViewState,
-  )
+  const [viewState, dispatch] = useViewState()
 
   useEffect(() => {
     const modelViewMatrix = mat4.create()
