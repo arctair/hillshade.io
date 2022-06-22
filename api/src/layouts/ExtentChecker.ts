@@ -19,7 +19,7 @@ export const errors = {
     `Layout has field "extent" with top ${top} and bottom ${bottom} resulting in non-positive height`,
 }
 
-export function createExtentChecker(): ExtentChecker {
+export function create(): ExtentChecker {
   return {
     check: (layout: any) =>
       !layout.extent

@@ -2,7 +2,7 @@ export type Checker = {
   check: (layout: any) => string[]
 }
 
-export function createChecker(
+export function create(
   checkers: Array<{ check: (layout: any) => string | undefined }>,
 ): Checker {
   return {

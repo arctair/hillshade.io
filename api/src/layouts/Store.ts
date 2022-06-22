@@ -6,7 +6,7 @@ export type Store = {
   create: (layout: Layout) => KeyedLayout
 }
 
-export function createStore(): Store {
+export function create(): Store {
   const layouts = new Array<KeyedLayout>()
   return {
     getAll: () => ({ layouts }),

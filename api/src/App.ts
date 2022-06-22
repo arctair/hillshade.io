@@ -1,6 +1,6 @@
 import express from 'express'
 
-export const createApp = (
+export const create = (
   versionRouter: express.Router,
   layoutRouter: express.Router,
 ) => {

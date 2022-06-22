@@ -1,7 +1,7 @@
-import { createExtentChecker, errors } from './ExtentChecker'
+import { create, errors } from './ExtentChecker'
 
 describe('checker', () => {
-  const { check } = createExtentChecker()
+  const { check } = create()
 
   test('no errors', () => {
     expect(

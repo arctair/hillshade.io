@@ -16,7 +16,7 @@ export const errors = {
     `Layout has field "size" with non-positive ${name} ${value}`,
 }
 
-export function createSizeChecker(): SizeChecker {
+export function create(): SizeChecker {
   return {
     check: (layout: any) =>
       !layout.size

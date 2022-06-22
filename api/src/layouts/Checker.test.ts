@@ -1,9 +1,9 @@
-import { createChecker } from './Checker'
+import { create } from './Checker'
 
 describe('checker', () => {
   const someChecker = { check: jest.fn() }
   const anotherChecker = { check: jest.fn() }
-  const { check } = createChecker([someChecker, anotherChecker])
+  const { check } = create([someChecker, anotherChecker])
 
   test('no errors', () => {
     someChecker.check.mockReturnValue(undefined)

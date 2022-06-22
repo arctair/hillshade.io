@@ -1,6 +1,6 @@
 import express from 'express'
 import request from 'supertest'
-import { createRouter } from './Router'
+import { create } from './Router'
 
 describe('layout router', () => {
   const checker = {
@@ -13,7 +13,7 @@ describe('layout router', () => {
   }
 
   const app = express()
-  app.use('/', createRouter(checker, store))
+  app.use('/', create(checker, store))
 
   test('get layouts', async () => {
     store.getAll.mockReturnValue({ layouts: [] })

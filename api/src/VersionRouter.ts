@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 
-export const createVersionRouter = (version: string) => {
+export const create = (version: string) => {
   const router = express.Router()
 
   router.use(express.json())

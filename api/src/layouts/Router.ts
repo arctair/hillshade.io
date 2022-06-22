@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express'
 import { Store } from './Store'
 import { Checker } from './Checker'
 
-export const createRouter = ({ check }: Checker, store: Store) => {
+export const create = ({ check }: Checker, store: Store) => {
   const router = express.Router()
 
   router.use(express.json())
