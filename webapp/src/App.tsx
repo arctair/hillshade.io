@@ -1,5 +1,6 @@
 import Cartograph from './components/Cartograph'
 import Footer from './components/Footer'
+import { RemoteLayoutProvider } from './components/RemoteLayoutState'
 import Sidebar from './components/Sidebar'
 import { Provider as ViewStateProvider } from './components/ViewState'
 
@@ -16,14 +17,16 @@ export default function App() {
         <div
           style={{ display: 'flex', flexDirection: 'row', height: '100%' }}
         >
-          <div style={{ flex: 0 }}>
-            <Sidebar />
-          </div>
-          <div style={{ flex: 1 }}>
-            <ViewStateProvider>
+          <ViewStateProvider>
+            <div style={{ flex: 0 }}>
+              <RemoteLayoutProvider>
+                <Sidebar />
+              </RemoteLayoutProvider>
+            </div>
+            <div style={{ flex: 1 }}>
               <Cartograph />
-            </ViewStateProvider>
-          </div>
+            </div>
+          </ViewStateProvider>
         </div>
       </div>
       <div
