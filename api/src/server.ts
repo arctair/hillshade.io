@@ -1,5 +1,6 @@
 import { createApp } from './App'
 import { createChecker as createLayoutChecker } from './layouts/Checker'
+import { createExtentChecker } from './layouts/ExtentChecker'
 import { createRouter as createLayoutRouter } from './layouts/Router'
 import { createSizeChecker } from './layouts/SizeChecker'
 import { createStore as createLayoutStore } from './layouts/Store'
@@ -10,7 +11,7 @@ const port = process.env.PORT || 8080
 const app = createApp(
   createVersionRouter(version),
   createLayoutRouter(
-    createLayoutChecker(createSizeChecker()),
+    createLayoutChecker(createExtentChecker(), createSizeChecker()),
     createLayoutStore(),
   ),
 )
