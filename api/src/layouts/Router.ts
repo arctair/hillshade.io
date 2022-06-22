@@ -1,25 +1,22 @@
 import express, { Request, Response } from 'express'
-import { LayoutStore } from './LayoutStore'
-import { LayoutValidity } from './LayoutValidity'
+import { Store } from './Store'
+import { Checker } from './Checker'
 
-export const createLayoutRouter = (
-  layoutValidity: LayoutValidity,
-  layoutService: LayoutStore,
-) => {
+export const createRouter = ({ check }: Checker, store: Store) => {
   const router = express.Router()
 
   router.use(express.json())
 
   router.get('/', (_: Request, response: Response) =>
-    response.json(layoutService.getAll()),
+    response.json(store.getAll()),
   )
 
   router.post('/', (request: Request, response: Response) => {
-    const errors = layoutValidity.check(request.body)
+    const errors = check(request.body)
     if (errors.length > 0) {
       response.status(400).send({ errors })
     } else {
-      const layout = layoutService.create(request.body)
+      const layout = store.create(request.body)
       response.status(201).send(layout)
     }
   })

@@ -1,7 +1,7 @@
-import { createLayoutValidity, errors } from './LayoutValidity'
+import { createChecker, errors } from './Checker'
 
-describe('layout validity check', () => {
-  const { check } = createLayoutValidity()
+describe('checker', () => {
+  const { check } = createChecker()
 
   test('no errors', () => {
     expect(check({ size: [1, 2] })).toEqual([])

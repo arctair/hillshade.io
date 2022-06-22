@@ -1,8 +1,8 @@
-export type LayoutValidity = {
+export type Checker = {
   check: (layout: any) => string[]
 }
 
-export function createLayoutValidity(): LayoutValidity {
+export function createChecker(): Checker {
   return {
     check: (layout) => {
       const errors = []

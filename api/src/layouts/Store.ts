@@ -1,12 +1,12 @@
 import { v4 as uuidv4 } from 'uuid'
 import { KeyedLayout, Layout } from './types'
 
-export type LayoutStore = {
+export type Store = {
   getAll: () => { layouts: KeyedLayout[] }
   create: (layout: Layout) => KeyedLayout
 }
 
-export function createLayoutStore(): LayoutStore {
+export function createStore(): Store {
   const layouts = new Array<KeyedLayout>()
   return {
     getAll: () => ({ layouts }),
