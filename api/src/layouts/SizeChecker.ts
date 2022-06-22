@@ -12,6 +12,8 @@ export const errors = {
     `Layout has field "size" of type [${badTypes.join(
       ', ',
     )}] but it should be of type [number, number]`,
+  SIZE_NON_POSITIVE_DIMENSION: (name: string, value: number) =>
+    `Layout has field "size" with non-positive ${name} ${value}`,
 }
 
 export function createSizeChecker(): SizeChecker {
@@ -27,6 +29,10 @@ export function createSizeChecker(): SizeChecker {
         ? errors.SIZE_BAD_ELEMENT_TYPES(
             layout.size.map((element: any) => typeof element),
           )
+        : layout.size[0] <= 0
+        ? errors.SIZE_NON_POSITIVE_DIMENSION('width', layout.size[0])
+        : layout.size[1] <= 0
+        ? errors.SIZE_NON_POSITIVE_DIMENSION('height', layout.size[1])
         : undefined,
   }
 }

@@ -25,4 +25,14 @@ describe('checker', () => {
       errors.SIZE_BAD_ELEMENT_TYPES(['string', 'number']),
     )
   })
+  test('non-positive width', () => {
+    expect(check({ size: [0, 999] })).toEqual(
+      errors.SIZE_NON_POSITIVE_DIMENSION('width', 0),
+    )
+  })
+  test('non-positive height', () => {
+    expect(check({ size: [999, 0] })).toEqual(
+      errors.SIZE_NON_POSITIVE_DIMENSION('height', 0),
+    )
+  })
 })
