@@ -6,6 +6,7 @@ export interface Layout {
     right: number
     bottom: number
   }
+  heightmapURL: string | undefined
 }
 
 export interface KeyedLayout extends Layout {
