@@ -2,8 +2,8 @@ import ViewState, {
   createPanAction,
   createResizeAction,
   createZoomAction,
-  MAX_3857_X,
-  MAX_3857_Y,
+  MAX_3857_LON,
+  MAX_3857_LAT,
   selectExtent,
   selectGLExtent1D,
   selectTileExtent1D,
@@ -204,9 +204,9 @@ describe('selectExtent', () => {
     }
     const actual = selectExtent(view)
     const expected = {
-      left: -MAX_3857_X,
-      top: -MAX_3857_Y,
-      right: MAX_3857_X * 3,
+      left: -MAX_3857_LON,
+      top: -MAX_3857_LAT,
+      right: MAX_3857_LON * 3,
       bottom: 0,
     }
     expect(actual).toEqual(expected)
@@ -219,10 +219,10 @@ describe('selectExtent', () => {
     }
     const actual = selectExtent(view)
     const expected = {
-      left: -MAX_3857_X,
-      top: -MAX_3857_Y,
-      right: MAX_3857_X,
-      bottom: MAX_3857_Y,
+      left: -MAX_3857_LON,
+      top: -MAX_3857_LAT,
+      right: MAX_3857_LON,
+      bottom: MAX_3857_LAT,
     }
     expect(actual).toEqual(expected)
   })
@@ -236,8 +236,8 @@ describe('selectExtent', () => {
     const expected = {
       left: 0,
       top: 0,
-      right: MAX_3857_X * 2,
-      bottom: MAX_3857_Y * 2,
+      right: MAX_3857_LON * 2,
+      bottom: MAX_3857_LAT * 2,
     }
     expect(actual).toEqual(expected)
   })
@@ -249,8 +249,8 @@ describe('selectExtent', () => {
     }
     const actual = selectExtent(view)
     const expected = {
-      left: -MAX_3857_X,
-      top: -MAX_3857_Y,
+      left: -MAX_3857_LON,
+      top: -MAX_3857_LAT,
       right: 0,
       bottom: 0,
     }
