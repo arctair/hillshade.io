@@ -4,9 +4,7 @@ describe('checker', () => {
   const { check } = create()
 
   test('no errors', () => {
-    expect(
-      check({ extent: { left: 0, top: 0, right: 1, bottom: 1 } }),
-    ).toEqual(undefined)
+    expect(check({ extent: [0, 0, 1, 1] })).toEqual(undefined)
   })
   test('extent missing', () => {
     expect(check({})).toEqual(errors.EXTENT_MISSING)
@@ -16,53 +14,38 @@ describe('checker', () => {
       errors.EXTENT_BAD_TYPE('string'),
     )
   })
-  test('extent of bad type array', () => {
-    expect(check({ extent: [] })).toEqual(errors.EXTENT_BAD_TYPE('array'))
+  test('extent of bad type object', () => {
+    expect(check({ extent: {} })).toEqual(errors.EXTENT_BAD_TYPE('object'))
   })
-  test('extent missing element left', () => {
-    expect(check({ extent: {} })).toEqual(
-      errors.EXTENT_BAD_ELEMENT_TYPES([]),
+  test('of bad length', () => {
+    expect(check({ extent: [1, 2, 3] })).toEqual(
+      errors.EXTENT_BAD_LENGTH(3),
     )
   })
-  test('extent missing element top', () => {
-    expect(check({ extent: { left: 0 } })).toEqual(
-      errors.EXTENT_BAD_ELEMENT_TYPES([['left', 'number']]),
-    )
-  })
-  test('extent with element right of bad type', () => {
-    expect(
-      check({ extent: { left: 0, top: 0, right: 'string' } }),
-    ).toEqual(
+  test('element of bad type', () => {
+    expect(check({ extent: ['asdf', 1234, 'qwer', 'ty'] })).toEqual(
       errors.EXTENT_BAD_ELEMENT_TYPES([
-        ['left', 'number'],
-        ['top', 'number'],
-        ['right', 'string'],
-      ]),
-    )
-  })
-  test('extent missing element bottom', () => {
-    expect(check({ extent: { left: 0, top: 0, right: 0 } })).toEqual(
-      errors.EXTENT_BAD_ELEMENT_TYPES([
-        ['left', 'number'],
-        ['top', 'number'],
-        ['right', 'number'],
+        'string',
+        'number',
+        'string',
+        'string',
       ]),
     )
   })
   test('extent has nonpositive width', () => {
-    expect(
-      check({ extent: { left: 0, top: 0, right: 0, bottom: 10 } }),
-    ).toEqual(errors.EXTENT_NONPOSITIVE_WIDTH(0, 0))
-    expect(
-      check({ extent: { left: 0, top: 0, right: -1, bottom: 10 } }),
-    ).toEqual(errors.EXTENT_NONPOSITIVE_WIDTH(0, -1))
+    expect(check({ extent: [0, 0, 0, 10] })).toEqual(
+      errors.EXTENT_NONPOSITIVE_WIDTH(0, 0),
+    )
+    expect(check({ extent: [0, 0, -1, 10] })).toEqual(
+      errors.EXTENT_NONPOSITIVE_WIDTH(0, -1),
+    )
   })
   test('extent has nonpositive height', () => {
-    expect(
-      check({ extent: { left: 0, top: 0, right: 10, bottom: 0 } }),
-    ).toEqual(errors.EXTENT_NONPOSITIVE_HEIGHT(0, 0))
-    expect(
-      check({ extent: { left: 0, top: 0, right: 10, bottom: -1 } }),
-    ).toEqual(errors.EXTENT_NONPOSITIVE_HEIGHT(0, -1))
+    expect(check({ extent: [0, 0, 10, 0] })).toEqual(
+      errors.EXTENT_NONPOSITIVE_HEIGHT(0, 0),
+    )
+    expect(check({ extent: [0, 0, 10, -1] })).toEqual(
+      errors.EXTENT_NONPOSITIVE_HEIGHT(0, -1),
+    )
   })
 })
