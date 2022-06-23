@@ -180,15 +180,15 @@ export function selectExtent({
   mapSize: [width, height],
   offset: [x, y],
   zoom,
-}: ViewState) {
+}: ViewState): [number, number, number, number] {
   const dx = ((MAX_3857_LON * 2 * Math.pow(2, -zoom)) / 256) * width
   const dy = ((MAX_3857_LAT * 2 * Math.pow(2, -zoom)) / 256) * height
-  return {
-    left: (x - 1) * MAX_3857_LON,
-    top: (y - 1) * MAX_3857_LAT,
-    right: (x - 1) * MAX_3857_LON + dx,
-    bottom: (y - 1) * MAX_3857_LAT + dy,
-  }
+  return [
+    (x - 1) * MAX_3857_LON,
+    (y - 1) * MAX_3857_LAT,
+    (x - 1) * MAX_3857_LON + dx,
+    (y - 1) * MAX_3857_LAT + dy,
+  ]
 }
 
 const context = React.createContext<

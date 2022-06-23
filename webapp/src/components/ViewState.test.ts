@@ -203,12 +203,7 @@ describe('selectExtent', () => {
       zoom: 0,
     }
     const actual = selectExtent(view)
-    const expected = {
-      left: -MAX_3857_LON,
-      top: -MAX_3857_LAT,
-      right: MAX_3857_LON * 3,
-      bottom: 0,
-    }
+    const expected = [-MAX_3857_LON, -MAX_3857_LAT, MAX_3857_LON * 3, 0]
     expect(actual).toEqual(expected)
   })
   test('map extent matches world extent', () => {
@@ -218,12 +213,12 @@ describe('selectExtent', () => {
       zoom: 0,
     }
     const actual = selectExtent(view)
-    const expected = {
-      left: -MAX_3857_LON,
-      top: -MAX_3857_LAT,
-      right: MAX_3857_LON,
-      bottom: MAX_3857_LAT,
-    }
+    const expected = [
+      -MAX_3857_LON,
+      -MAX_3857_LAT,
+      MAX_3857_LON,
+      MAX_3857_LAT,
+    ]
     expect(actual).toEqual(expected)
   })
   test('map extent offset from world extent', () => {
@@ -233,12 +228,7 @@ describe('selectExtent', () => {
       zoom: 0,
     }
     const actual = selectExtent(view)
-    const expected = {
-      left: 0,
-      top: 0,
-      right: MAX_3857_LON * 2,
-      bottom: MAX_3857_LAT * 2,
-    }
+    const expected = [0, 0, MAX_3857_LON * 2, MAX_3857_LAT * 2]
     expect(actual).toEqual(expected)
   })
   test('map extent is one quarter of world extent', () => {
@@ -248,12 +238,7 @@ describe('selectExtent', () => {
       zoom: 1,
     }
     const actual = selectExtent(view)
-    const expected = {
-      left: -MAX_3857_LON,
-      top: -MAX_3857_LAT,
-      right: 0,
-      bottom: 0,
-    }
+    const expected = [-MAX_3857_LON, -MAX_3857_LAT, 0, 0]
     expect(actual).toEqual(expected)
   })
 })
