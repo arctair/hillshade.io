@@ -174,23 +174,21 @@ export function selectTileExtent1D({
 }
 
 export const MAX_3857_X = 20026376.39
-export const MAX_3857_LON = 180
 export const MAX_3857_Y = 20048966.1
-export const MAX_3857_LAT = 85.06
 export function selectLayout({
   mapSize: [width, height],
   offset: [x, y],
   zoom,
 }: ViewState): Layout {
-  const dx = ((MAX_3857_LON * 2 * Math.pow(2, -zoom)) / 256) * width
-  const dy = ((MAX_3857_LAT * 2 * Math.pow(2, -zoom)) / 256) * height
+  const dx = ((MAX_3857_X * 2 * Math.pow(2, -zoom)) / 256) * width
+  const dy = ((MAX_3857_Y * 2 * Math.pow(2, -zoom)) / 256) * height
   return {
     size: [width, height],
     extent: [
-      (x - 1) * MAX_3857_LON,
-      (y - 1) * MAX_3857_LAT,
-      (x - 1) * MAX_3857_LON + dx,
-      (y - 1) * MAX_3857_LAT + dy,
+      (x - 1) * MAX_3857_X,
+      (y - 1) * MAX_3857_Y,
+      (x - 1) * MAX_3857_X + dx,
+      (y - 1) * MAX_3857_Y + dy,
     ],
   }
 }
