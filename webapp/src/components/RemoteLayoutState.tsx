@@ -1,6 +1,6 @@
 import React, { useContext, useReducer } from 'react'
 import { KeyedLayout, Layout } from './types'
-import ViewState, { selectExtent, useViewState } from './ViewState'
+import ViewState, { selectLayout, useViewState } from './ViewState'
 
 type Action = CreateStart | CreateSuccess | CreateFailure
 enum ActionType {
@@ -74,10 +74,8 @@ async function createLayout(
   dispatch: React.Dispatch<Action>,
   viewState: ViewState,
 ) {
-  const layout = {
-    size: viewState.mapSize,
-    extent: selectExtent(viewState),
-  }
+  const layout = selectLayout(viewState)
+
   dispatch({ type: ActionType.CreateStart, layout })
   const response = await fetch('https://api.hillshade.io', {
     method: 'post',
