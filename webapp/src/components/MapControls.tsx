@@ -61,14 +61,15 @@ export default function MapControls({ onEvent }: MapControlsProps) {
       onPointerUp={() => {
         lastPointerPositionRef.current = undefined
       }}
-      onWheel={(e) =>
+      onWheel={(e) => {
+        const { left, top } = ref.current.getBoundingClientRect()
         onEvent(
           createZoomAction({
             deltaZ: -e.deltaY / 114 / 4,
-            pointerXY: [e.clientX, e.clientY],
+            pointerXY: [e.clientX - left, e.clientY - top],
           }),
         )
-      }
+      }}
     >
       <div style={{ gridColumn: '2' }}>
         <ZoomButtons
