@@ -186,9 +186,9 @@ export function selectLayout({
     size: [width, height],
     extent: [
       (x * 2 - 1) * MAX_3857_X,
-      (y * 2 - 1) * MAX_3857_Y,
-      (x * 2 - 1) * MAX_3857_X + dx,
       (y * 2 - 1) * MAX_3857_Y + dy,
+      (x * 2 - 1) * MAX_3857_X + dx,
+      (y * 2 - 1) * MAX_3857_Y,
     ],
   }
 }

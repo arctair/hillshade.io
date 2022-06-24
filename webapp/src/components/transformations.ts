@@ -10,10 +10,10 @@ export function EPSG_3857_TO_EPSG_4326([x, y]: [number, number]): [
 }
 
 export function transformExtent(
-  [left0, top0, right0, bottom0]: [number, number, number, number],
+  [left0, bottom0, right0, top0]: [number, number, number, number],
   fn: (p: [number, number]) => [number, number],
 ): [number, number, number, number] {
-  const [left1, top1] = fn([left0, top0])
-  const [right1, bottom1] = fn([right0, bottom0])
-  return [left1, top1, right1, bottom1]
+  const [left1, bottom1] = fn([left0, bottom0])
+  const [right1, top1] = fn([right0, top0])
+  return [left1, bottom1, right1, top1]
 }

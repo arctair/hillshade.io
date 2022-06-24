@@ -214,7 +214,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, -MAX_3857_Y, MAX_3857_X * 3, 0]
+      const expected = [-MAX_3857_X, 0, MAX_3857_X * 3, -MAX_3857_Y]
       expect(actual).toEqual(expected)
     })
     test('map extent matches world extent', () => {
@@ -224,7 +224,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, -MAX_3857_Y, MAX_3857_X, MAX_3857_Y]
+      const expected = [-MAX_3857_X, MAX_3857_Y, MAX_3857_X, -MAX_3857_Y]
       expect(actual).toEqual(expected)
     })
     test('map extent offset from world extent', () => {
@@ -236,9 +236,9 @@ describe('selectLayout', () => {
       const actual = selectLayout(view).extent
       const expected = [
         MAX_3857_X,
-        MAX_3857_Y,
-        MAX_3857_X * 3,
         MAX_3857_Y * 3,
+        MAX_3857_X * 3,
+        MAX_3857_Y,
       ]
       expect(actual).toEqual(expected)
     })
@@ -249,7 +249,7 @@ describe('selectLayout', () => {
         zoom: 1,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, -MAX_3857_Y, 0, 0]
+      const expected = [-MAX_3857_X, 0, 0, -MAX_3857_Y]
       expect(actual).toEqual(expected)
     })
   })
