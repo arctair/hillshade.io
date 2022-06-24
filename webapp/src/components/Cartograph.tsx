@@ -48,7 +48,7 @@ export default function Cartograph() {
           x >= 0 && x < tileCount && y >= 0 && y < tileCount && z < 23
         tiles.push({
           url: isInBounds
-            ? `http://mt0.google.com/vt/lyrs=y&hl=en&x=${x}&y=${y}&z=${z}`
+            ? `https://mt0.google.com/vt/lyrs=y&hl=en&x=${x}&y=${y}&z=${z}`
             : undefined,
         })
       }
