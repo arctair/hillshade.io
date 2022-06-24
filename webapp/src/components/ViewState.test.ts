@@ -1,6 +1,4 @@
 import ViewState, {
-  MAX_3857_X,
-  MAX_3857_Y,
   createPanAction,
   createResizeAction,
   createZoomAction,
@@ -214,7 +212,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, 0, MAX_3857_X * 3, -MAX_3857_Y]
+      const expected = [-1, 0, 3, -1]
       expect(actual).toEqual(expected)
     })
     test('map extent matches world extent', () => {
@@ -224,7 +222,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, MAX_3857_Y, MAX_3857_X, -MAX_3857_Y]
+      const expected = [-1, 1, 1, -1]
       expect(actual).toEqual(expected)
     })
     test('map extent offset from world extent', () => {
@@ -234,12 +232,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [
-        MAX_3857_X,
-        MAX_3857_Y * 3,
-        MAX_3857_X * 3,
-        MAX_3857_Y,
-      ]
+      const expected = [1, 3, 3, 1]
       expect(actual).toEqual(expected)
     })
     test('map extent is one quarter of world extent', () => {
@@ -249,7 +242,7 @@ describe('selectLayout', () => {
         zoom: 1,
       }
       const actual = selectLayout(view).extent
-      const expected = [-MAX_3857_X, 0, 0, -MAX_3857_Y]
+      const expected = [-1, 0, 0, -1]
       expect(actual).toEqual(expected)
     })
   })

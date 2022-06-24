@@ -1,3 +1,12 @@
+export const MAX_3857_X = 20026376.39
+export const MAX_3857_Y = 20048966.1
+export function TILE_TO_EPSG_3857([x, y]: [number, number]): [
+  number,
+  number,
+] {
+  return [x * MAX_3857_X, -y * MAX_3857_Y]
+}
+
 export function EPSG_3857_TO_EPSG_4326([x, y]: [number, number]): [
   number,
   number,

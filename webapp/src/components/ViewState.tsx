@@ -173,23 +173,16 @@ export function selectTileExtent1D({
   return [offsetFloor, offsetFloor + size / 256 + 1]
 }
 
-export const MAX_3857_X = 20026376.39
-export const MAX_3857_Y = 20048966.1
 export function selectLayout({
   mapSize: [width, height],
   offset: [x, y],
   zoom,
 }: ViewState): Layout {
-  const dx = ((MAX_3857_X * 2 * Math.pow(2, -zoom)) / 256) * width
-  const dy = ((MAX_3857_Y * 2 * Math.pow(2, -zoom)) / 256) * height
+  const dx = ((2 * Math.pow(2, -zoom)) / 256) * width
+  const dy = ((2 * Math.pow(2, -zoom)) / 256) * height
   return {
     size: [width, height],
-    extent: [
-      (x * 2 - 1) * MAX_3857_X,
-      (y * 2 - 1) * MAX_3857_Y + dy,
-      (x * 2 - 1) * MAX_3857_X + dx,
-      (y * 2 - 1) * MAX_3857_Y,
-    ],
+    extent: [x * 2 - 1, y * 2 - 1 + dy, x * 2 - 1 + dx, y * 2 - 1],
   }
 }
 
