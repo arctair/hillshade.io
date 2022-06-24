@@ -7,7 +7,7 @@ function useServerVersion() {
   useEffect(() => {
     ;(async () => {
       try {
-        const response = await fetch('https://api.hillshade.io')
+        const response = await fetch('https://api.hillshade.io/version')
         if (response.status >= 200 && response.status < 300) {
           const body = await response.json()
           setVersion(body.version)
