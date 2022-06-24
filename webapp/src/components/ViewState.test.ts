@@ -234,7 +234,12 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [0, 0, MAX_3857_X * 2, MAX_3857_Y * 2]
+      const expected = [
+        MAX_3857_X,
+        MAX_3857_Y,
+        MAX_3857_X * 3,
+        MAX_3857_Y * 3,
+      ]
       expect(actual).toEqual(expected)
     })
     test('map extent is one quarter of world extent', () => {

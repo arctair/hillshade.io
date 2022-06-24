@@ -185,10 +185,10 @@ export function selectLayout({
   return {
     size: [width, height],
     extent: [
-      (x - 1) * MAX_3857_X,
-      (y - 1) * MAX_3857_Y,
-      (x - 1) * MAX_3857_X + dx,
-      (y - 1) * MAX_3857_Y + dy,
+      (x * 2 - 1) * MAX_3857_X,
+      (y * 2 - 1) * MAX_3857_Y,
+      (x * 2 - 1) * MAX_3857_X + dx,
+      (y * 2 - 1) * MAX_3857_Y + dy,
     ],
   }
 }
