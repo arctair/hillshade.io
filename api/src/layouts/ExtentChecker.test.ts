@@ -1,8 +1,6 @@
-import { create, errors } from './ExtentChecker'
+import { check, errors } from './ExtentChecker'
 
 describe('checker', () => {
-  const { check } = create()
-
   test('no errors', () => {
     expect(check({ extent: [0, 0, 1, 1] })).toEqual(undefined)
   })

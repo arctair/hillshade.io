@@ -7,3 +7,7 @@ export interface Layout {
 export interface KeyedLayout extends Layout {
   key: string
 }
+
+export interface LayoutPatch {
+  heightmapURL: string
+}

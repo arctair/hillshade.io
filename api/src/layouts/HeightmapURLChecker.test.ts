@@ -1,17 +1,24 @@
 import {
-  create as createHeightmapURLChecker,
+  checkPresent,
+  checkNotPresent,
   errors,
 } from './HeightmapURLChecker'
 
-describe('checker', () => {
-  const { check } = createHeightmapURLChecker()
-
+describe('heightmap url is not present', () => {
   test('no errors', () => {
-    expect(check({})).toEqual(undefined)
+    expect(checkNotPresent({})).toEqual(undefined)
   })
   test('heightmap url is present', () => {
-    expect(check({ heightmapURL: '' })).toEqual(
+    expect(checkNotPresent({ heightmapURL: '' })).toEqual(
       errors.HEIGHTMAP_URL_PRESENT,
     )
+  })
+})
+describe('heightmap url is present', () => {
+  test('no errors', () => {
+    expect(checkPresent({ heightmapURL: '' })).toEqual(undefined)
+  })
+  test('heightmap url is present', () => {
+    expect(checkPresent({})).toEqual(errors.HEIGHTMAP_URL_NOT_PRESENT)
   })
 })

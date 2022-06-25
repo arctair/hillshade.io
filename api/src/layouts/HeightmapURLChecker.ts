@@ -1,17 +1,18 @@
-export type HeightmapURLChecker = {
-  check: (layout: any) => string | undefined
-}
-
 export const errors = {
   HEIGHTMAP_URL_PRESENT:
-    'Layout is has field "heightmapURL" and it should not be present',
+    'Layout has field "heightmapURL" and it should not be present',
+  HEIGHTMAP_URL_NOT_PRESENT:
+    'Patch missing field "heightmapURL" and it should be present',
 }
 
-export function create(): HeightmapURLChecker {
-  return {
-    check: (layout: any) =>
-      layout.heightmapURL !== undefined
-        ? errors.HEIGHTMAP_URL_PRESENT
-        : undefined,
-  }
+export function checkNotPresent(layout: any) {
+  return layout.heightmapURL !== undefined
+    ? errors.HEIGHTMAP_URL_PRESENT
+    : undefined
+}
+
+export function checkPresent(layout: any) {
+  return layout.heightmapURL === undefined
+    ? errors.HEIGHTMAP_URL_NOT_PRESENT
+    : undefined
 }

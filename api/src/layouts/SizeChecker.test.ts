@@ -1,8 +1,6 @@
-import { create, errors } from './SizeChecker'
+import { check, errors } from './SizeChecker'
 
 describe('checker', () => {
-  const { check } = create()
-
   test('no errors', () => {
     expect(check({ size: [1, 2] })).toEqual(undefined)
   })
