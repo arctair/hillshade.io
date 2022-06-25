@@ -13,7 +13,7 @@ enum ActionType {
 const defaultState = { errors: [], layout: undefined }
 interface State {
   errors: string[]
-  layout?: Layout
+  layout?: KeyedLayout
 }
 
 interface ContextOperations {
@@ -60,7 +60,7 @@ function reducer(state: State, action: Action) {
 }
 
 function reduceCreateStart(_: State, action: CreateStart) {
-  return { errors: [], layout: action.layout }
+  return { errors: [], layout: undefined }
 }
 
 function reduceCreateSuccess(_: State, action: CreateSuccess) {

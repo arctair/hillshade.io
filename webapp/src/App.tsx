@@ -18,7 +18,7 @@ export default function App() {
           style={{ display: 'flex', flexDirection: 'row', height: '100%' }}
         >
           <ViewStateProvider>
-            <div style={{ flex: 0 }}>
+            <div style={{ flex: 0, flexBasis: '30vw' }}>
               <RemoteLayoutProvider>
                 <Sidebar />
               </RemoteLayoutProvider>
