@@ -75,19 +75,18 @@ export default function Cartograph() {
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (viewState.mapSize[0] <= 1) return
-    canvas.width = viewState.mapSize[0]
-    canvas.height = viewState.mapSize[1]
-    canvas.getContext('webgl')?.viewport(0, 0, canvas.width, canvas.height)
+    const [width, height] = viewState.mapSize
+    canvas
+      .getContext('webgl')
+      ?.viewport(0, 0, (canvas.width = width), (canvas.height = height))
   }, [viewState.mapSize])
 
   useEffect(() => {
     const canvas = canvasRef.current
     const context = contextRef.current
     const cartographWebGL = new CartographWebGL(canvas, context, setError)
-    cartographWebGL.loadBuffers()
+    let lastTileGridVersion = 0
     let animationFrame: number
-    let lastTileGridVersion = context.tileGridVersion
     function doAnimationFrame() {
       if (lastTileGridVersion !== context.tileGridVersion) {
         cartographWebGL.loadBuffers()
