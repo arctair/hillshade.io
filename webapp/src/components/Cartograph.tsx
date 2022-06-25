@@ -39,10 +39,12 @@ export default function Cartograph() {
   }, [])
 
   useEffect(() => {
+    const context = contextRef.current
+
     const projectionMatrix = mat4.create()
     const extent = selectGLExtent2D(viewState)
     mat4.ortho(projectionMatrix, ...extent, 0.1, 100.0)
-    contextRef.current.projectionMatrix = projectionMatrix
+    context.projectionMatrix = projectionMatrix
 
     const tiles = []
     let [left, right, bottom, top] = selectTileExtent2D(viewState)
@@ -59,17 +61,17 @@ export default function Cartograph() {
         })
       }
     }
-    contextRef.current.tiles = tiles
+    context.tiles = tiles
 
     const tileColumnCount = Math.ceil(right - left)
     const tileRowCount = Math.ceil(bottom - top)
     if (
-      tileColumnCount !== contextRef.current.tileColumnCount ||
-      tileRowCount !== contextRef.current.tileRowCount
+      tileColumnCount !== context.tileColumnCount ||
+      tileRowCount !== context.tileRowCount
     ) {
-      contextRef.current.tileGridVersion++
-      contextRef.current.tileColumnCount = tileColumnCount
-      contextRef.current.tileRowCount = tileRowCount
+      context.tileGridVersion++
+      context.tileColumnCount = tileColumnCount
+      context.tileRowCount = tileRowCount
     }
   }, [viewState])
 
