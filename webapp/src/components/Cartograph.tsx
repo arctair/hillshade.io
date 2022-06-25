@@ -12,6 +12,9 @@ interface Context {
   modelViewMatrix: any
   projectionMatrix: any
   tiles: Array<{ url?: string }>
+  tileColumnCount: number
+  tileRowCount: number
+  tileGridVersion: number
 }
 
 export default function Cartograph() {
@@ -21,6 +24,9 @@ export default function Cartograph() {
     modelViewMatrix: mat4.create(),
     projectionMatrix: mat4.create(),
     tiles: [],
+    tileRowCount: 0,
+    tileColumnCount: 0,
+    tileGridVersion: 0,
   })
 
   const [error, setError] = useState('')
@@ -54,22 +60,45 @@ export default function Cartograph() {
       }
     }
     contextRef.current.tiles = tiles
+
+    const tileColumnCount = Math.ceil(right - left)
+    const tileRowCount = Math.ceil(bottom - top)
+    if (
+      tileColumnCount !== contextRef.current.tileColumnCount ||
+      tileRowCount !== contextRef.current.tileRowCount
+    ) {
+      contextRef.current.tileGridVersion++
+      contextRef.current.tileColumnCount = tileColumnCount
+      contextRef.current.tileRowCount = tileRowCount
+    }
   }, [viewState])
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const context = contextRef.current
     if (viewState.mapSize[0] <= 1) return
     canvas.width = viewState.mapSize[0]
     canvas.height = viewState.mapSize[1]
-
-    const cartographWebGL = new CartographWebGL(canvas, context, setError)
-    function animationFrame() {
-      cartographWebGL.animationFrame()
-      requestAnimationFrame(animationFrame)
-    }
-    animationFrame()
+    canvas.getContext('webgl')?.viewport(0, 0, canvas.width, canvas.height)
   }, [viewState.mapSize])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    const context = contextRef.current
+    const cartographWebGL = new CartographWebGL(canvas, context, setError)
+    cartographWebGL.loadBuffers()
+    let animationFrame: number
+    let lastTileGridVersion = context.tileGridVersion
+    function doAnimationFrame() {
+      if (lastTileGridVersion !== context.tileGridVersion) {
+        cartographWebGL.loadBuffers()
+        lastTileGridVersion = context.tileGridVersion
+      }
+      cartographWebGL.animationFrame()
+      animationFrame = requestAnimationFrame(doAnimationFrame)
+    }
+    doAnimationFrame()
+    return () => cancelAnimationFrame(animationFrame)
+  }, [])
 
   return (
     <div style={{ height: '100%', position: 'relative' }} ref={ref}>
@@ -199,6 +228,29 @@ class CartographWebGL {
     )
     const uSamplerLocation = gl.getUniformLocation(program, 'uSampler')
 
+    const positionBuffer = gl.createBuffer()
+    const textureCoordinateBuffer = gl.createBuffer()
+    const indexBuffer = gl.createBuffer()
+
+    return {
+      aTextureCoordinateLocation,
+      aVertexPositionLocation,
+      context,
+      gl,
+      indexBuffer,
+      positionBuffer,
+      program,
+      textureCoordinateBuffer,
+      texturesByURL: new Map(),
+      uModelViewMatrixLocation,
+      uProjectionMatrixLocation,
+      uSamplerLocation,
+    } as CartographWebGLFields
+  }
+
+  loadBuffers() {
+    const { gl, indexBuffer, positionBuffer, textureCoordinateBuffer } =
+      this.fields!
     let positions = new Array<number>()
     let textureCoordinates = new Array<number>()
     let indices = new Array<number>()
@@ -228,7 +280,6 @@ class CartographWebGL {
       }
     }
 
-    const positionBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
@@ -236,7 +287,6 @@ class CartographWebGL {
       gl.STATIC_DRAW,
     )
 
-    const textureCoordinateBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordinateBuffer)
     gl.bufferData(
       gl.ARRAY_BUFFER,
@@ -244,28 +294,12 @@ class CartographWebGL {
       gl.STATIC_DRAW,
     )
 
-    const indexBuffer = gl.createBuffer()
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer)
     gl.bufferData(
       gl.ELEMENT_ARRAY_BUFFER,
       new Uint16Array(indices),
       gl.STATIC_DRAW,
     )
-
-    return {
-      aTextureCoordinateLocation,
-      aVertexPositionLocation,
-      context,
-      gl,
-      indexBuffer,
-      positionBuffer,
-      program,
-      textureCoordinateBuffer,
-      texturesByURL: new Map(),
-      uModelViewMatrixLocation,
-      uProjectionMatrixLocation,
-      uSamplerLocation,
-    } as CartographWebGLFields
   }
 
   animationFrame() {
