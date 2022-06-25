@@ -46,6 +46,9 @@ function KeyedLayoutSummary({ layout }: KeyedLayoutSummaryProps) {
     <>
       <div>key: {layout.key}</div>
       <LayoutSummary layout={layout} />
+      {layout.heightmapURL && (
+        <div>heightmap URL: {layout.heightmapURL}</div>
+      )}
     </>
   ) : null
 }
