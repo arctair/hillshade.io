@@ -8,12 +8,14 @@ enum ActionType {
   CreateStart,
   CreateSuccess,
   CreateFailure,
+  HeightmapURLAvailable,
 }
 
 const defaultState = { errors: [], layout: undefined }
 interface State {
   errors: string[]
   layout?: KeyedLayout
+  timer?: NodeJS.Timer
 }
 
 interface ContextOperations {
@@ -42,7 +44,7 @@ export function RemoteLayoutProvider({
       children={children}
       value={[
         state,
-        { createLayout: () => createLayout(dispatch, viewState) },
+        { createLayout: () => createLayout(dispatch, state, viewState) },
       ]}
     />
   )
@@ -56,25 +58,40 @@ function reducer(state: State, action: Action) {
       return reduceCreateSuccess(state, action as CreateSuccess)
     case ActionType.CreateFailure:
       return reduceCreateFailure(state, action as CreateFailure)
+    case ActionType.HeightmapURLAvailable:
+      return reduceHeightmapURLAvailable(
+        state,
+        action as HeightmapURLAvailable,
+      )
   }
 }
 
-function reduceCreateStart(_: State, action: CreateStart) {
-  return { errors: [], layout: undefined }
+function reduceCreateStart(state: State, action: CreateStart) {
+  return { errors: [] }
 }
 
 function reduceCreateSuccess(_: State, action: CreateSuccess) {
-  return { errors: [], layout: action.layout }
+  return { errors: [], layout: action.layout, timer: action.timer }
 }
 
 function reduceCreateFailure(_: State, action: CreateFailure) {
-  return { errors: action.errors, layout: undefined }
+  return { errors: action.errors }
+}
+
+function reduceHeightmapURLAvailable(
+  _: State,
+  action: HeightmapURLAvailable,
+) {
+  return { errors: [], layout: action.layout }
 }
 
 async function createLayout(
   dispatch: React.Dispatch<Action>,
+  { timer }: State,
   viewState: ViewState,
 ) {
+  clearInterval(timer)
+
   const layout = selectLayout(viewState)
   layout.extent = transformExtent(layout.extent, TILE_TO_EPSG_3857)
 
@@ -90,9 +107,23 @@ async function createLayout(
     const { errors } = await response.json()
     dispatch({ type: ActionType.CreateFailure, errors })
   } else {
+    const layout = await response.json()
+    const timer = setInterval(async () => {
+      const response = await fetch('https://api.hillshade.io')
+      const { layouts }: { layouts: KeyedLayout[] } = await response.json()
+      const updatedLayout = layouts.find(({ key }) => key === layout.key)!
+      if (updatedLayout.heightmapURL) {
+        clearInterval(timer)
+        dispatch({
+          type: ActionType.HeightmapURLAvailable,
+          layout: updatedLayout,
+        })
+      }
+    }, 1000)
     dispatch({
       type: ActionType.CreateSuccess,
-      layout: await response.json(),
+      layout,
+      timer,
     })
   }
 }
@@ -105,6 +136,7 @@ interface CreateStart extends CreateStartProps {
 }
 interface CreateSuccessProps {
   layout: KeyedLayout
+  timer: NodeJS.Timer
 }
 interface CreateSuccess extends CreateSuccessProps {
   type: ActionType
@@ -113,5 +145,12 @@ interface CreateFailureProps {
   errors: string[]
 }
 interface CreateFailure extends CreateFailureProps {
+  type: ActionType
+}
+
+interface HeightmapURLAvailableProps {
+  layout: KeyedLayout
+}
+interface HeightmapURLAvailable extends HeightmapURLAvailableProps {
   type: ActionType
 }
