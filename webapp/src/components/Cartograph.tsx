@@ -58,12 +58,12 @@ export default function Cartograph() {
 
   useEffect(() => {
     const canvas = canvasRef.current
-    const matrices = contextRef.current
+    const context = contextRef.current
     if (viewState.mapSize[0] <= 1) return
     canvas.width = viewState.mapSize[0]
     canvas.height = viewState.mapSize[1]
 
-    const cartographWebGL = new CartographWebGL(canvas, matrices, setError)
+    const cartographWebGL = new CartographWebGL(canvas, context, setError)
     function animationFrame() {
       cartographWebGL.animationFrame()
       requestAnimationFrame(animationFrame)
