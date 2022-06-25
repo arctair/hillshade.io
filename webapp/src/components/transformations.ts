@@ -11,9 +11,9 @@ export function EPSG_3857_TO_EPSG_4326([x, y]: [number, number]): [
   number,
   number,
 ] {
-  const yRadians = (y / 20048966.1) * Math.PI
+  const yRadians = (y / MAX_3857_Y) * Math.PI
   return [
-    (x / 20026376.39) * 180,
+    (x / MAX_3857_X) * 180,
     (Math.atan(2.7182818284 ** yRadians) / Math.PI) * 360 - 90,
   ]
 }
