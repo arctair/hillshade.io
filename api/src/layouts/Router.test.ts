@@ -5,8 +5,8 @@ import { errNoLayoutWithKey } from './Store'
 
 describe('layout router', () => {
   const checker = {
-    checkCreate: jest.fn(),
-    checkPatch: jest.fn(),
+    create: jest.fn(),
+    patch: jest.fn(),
   }
 
   const store = {
@@ -28,7 +28,7 @@ describe('layout router', () => {
   test('create layout', async () => {
     const upLayout = { size: [256, 256] }
     const downLayout = { key: 'abcd', size: [256, 256] }
-    checker.checkCreate.mockReturnValue([])
+    checker.create.mockReturnValue([])
     store.create.mockReturnValue(downLayout)
 
     const response = await request(app).post('/').send(upLayout)
@@ -39,13 +39,13 @@ describe('layout router', () => {
   })
 
   test('create malformed layout returns 400 bad request with descriptive error', async () => {
-    checker.checkCreate.mockReturnValue([
+    checker.create.mockReturnValue([
       'Field "size" of type [number, number] is missing',
     ])
     const upLayout = { dorp: 'dorp' }
     const response = await request(app).post('/').send(upLayout)
 
-    expect(checker.checkCreate).toHaveBeenCalledWith(upLayout)
+    expect(checker.create).toHaveBeenCalledWith(upLayout)
     expect(response.status).toEqual(400)
     expect(response.body).toEqual({
       errors: ['Field "size" of type [number, number] is missing'],
@@ -55,7 +55,7 @@ describe('layout router', () => {
   test('upsert layout with heightmap url', async () => {
     const upLayoutPatch = { heightmapURL: 'new url' }
     const downLayout = { down: 'layout' }
-    checker.checkPatch.mockReturnValue([])
+    checker.patch.mockReturnValue([])
     store.patch.mockReturnValue([downLayout, undefined])
     const response = await request(app)
       .patch('/layouts/abcdefg')
@@ -69,19 +69,19 @@ describe('layout router', () => {
   test('upsert malformed patch returns 400 bad request with descriptive error', async () => {
     const upPatch = { the: 'patch' }
     const downErrors = ['the errors']
-    checker.checkPatch.mockReturnValue(downErrors)
+    checker.patch.mockReturnValue(downErrors)
     const response = await request(app)
       .patch('/layouts/abcdefg')
       .send(upPatch)
 
     expect(response.status).toEqual(400)
     expect(response.body).toEqual({ errors: downErrors })
-    expect(checker.checkPatch).toHaveBeenCalledWith(upPatch)
+    expect(checker.patch).toHaveBeenCalledWith(upPatch)
   })
 
   test('upsert patch to key that is not present', async () => {
     const upPatch = { the: 'patch' }
-    checker.checkPatch.mockReturnValue([])
+    checker.patch.mockReturnValue([])
     store.patch.mockReturnValue([null, errNoLayoutWithKey])
     const response = await request(app)
       .patch('/layouts/abcdefg')
@@ -95,7 +95,7 @@ describe('layout router', () => {
 
   test('upsert patch generic error', async () => {
     const upPatch = { another: 'patch' }
-    checker.checkPatch.mockReturnValue([])
+    checker.patch.mockReturnValue([])
     store.patch.mockReturnValue([null, 'another error'])
     const response = await request(app)
       .patch('/layouts/fhfhfh')

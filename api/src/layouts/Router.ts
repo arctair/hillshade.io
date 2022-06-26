@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express'
-import { Checks } from './Checks'
+import { Checks } from './checks'
 import { errNoLayoutWithKey, Store } from './Store'
 
 export const create = (

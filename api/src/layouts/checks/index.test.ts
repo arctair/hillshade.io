@@ -1,4 +1,4 @@
-import { create } from './Checks'
+import { create } from '.'
 
 describe('checks', () => {
   const someChecker = jest.fn()

@@ -1,10 +1,10 @@
-import { check as checkExtent } from './layouts/ExtentChecker'
-import { check as checkSize } from './layouts/SizeChecker'
+import { check as checkExtent } from './layouts/checks/ExtentChecker'
+import { check as checkSize } from './layouts/checks/SizeChecker'
 import {
   checkNotPresent as checkHeightmapURLNotPresent,
   checkPresent as checkHeightmapURLPresent,
-} from './layouts/HeightmapURLChecker'
-import { create as createChecks } from './layouts/Checks'
+} from './layouts/checks/HeightmapURLChecker'
+import { create as createChecks } from './layouts/checks'
 import { create as createApp } from './App'
 import { create as createLayoutRouter } from './layouts/Router'
 import { create as createLayoutStore } from './layouts/Store'
