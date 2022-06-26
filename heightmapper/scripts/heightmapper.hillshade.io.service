@@ -2,7 +2,7 @@
 Description=heightmapper.hillshade.io
 
 [Service]
-ExecStart=/usr/local/bin/npm start
+ExecStart=/home/arctair/hillshade.io/heightmapper/scripts/execstart
 Type=simple
 WorkingDirectory=/home/arctair/hillshade.io/heightmapper
 

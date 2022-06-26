@@ -8,6 +8,7 @@ cat <<EOF | ssh yagni -T
     cd heightmapper
     nvm install
     npm install
+    npx tsc
     systemctl daemon-reload --user
     systemctl restart heightmapper.hillshade.io --user
 EOF

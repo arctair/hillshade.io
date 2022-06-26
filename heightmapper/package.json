@@ -4,8 +4,8 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "start": "VERSION=`git rev-parse --short HEAD` node --loader ts-node/esm src/server.ts",
-    "start:watch": "VERSION=`git rev-parse --short HEAD` NODE_OPTIONS='--loader ts-node/esm' nodemon -e ts,tsx src/server.ts",
+    "start": "VERSION=`git rev-parse --short HEAD` ts-node --esm src/server.ts",
+    "start:watch": "VERSION=`git rev-parse --short HEAD` nodemon -e ts,tsx",
     "test": "jest",
     "test:watch": "jest --watch"
   },
