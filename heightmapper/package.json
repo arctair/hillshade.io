@@ -4,8 +4,8 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "start": "VERSION=`git rev-parse --short HEAD` ts-node src/server.ts",
-    "start:watch": "VERSION=`git rev-parse --short HEAD` nodemon src/server.ts",
+    "start": "VERSION=`git rev-parse --short HEAD` node --loader ts-node/esm src/server.ts",
+    "start:watch": "VERSION=`git rev-parse --short HEAD` NODE_OPTIONS='--loader ts-node/esm' nodemon -e ts,tsx src/server.ts",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -14,9 +14,12 @@
   "dependencies": {
     "@types/jest": "^28.1.1",
     "@types/node": "^18.0.0",
+    "@types/node-fetch": "^2.6.2",
     "jest": "^28.1.1",
+    "node-fetch": "^3.2.6",
     "ts-jest": "^28.0.5",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"
-  }
+  },
+  "type": "module"
 }
