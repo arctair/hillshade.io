@@ -1,0 +1,4 @@
+#!/bin/zsh
+source /usr/share/nvm/init-nvm.sh
+nvm install 'lts/*' --reinstall-packages-from=`nvm current` 
+nvm current > .nvmrc

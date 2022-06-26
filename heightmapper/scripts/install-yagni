@@ -1,0 +1,24 @@
+#!/bin/zsh
+cat <<EOF | ssh yagni -T
+  setopt verbose
+  set -e
+  if [ ! -d hillshade.io ] ; then
+    git init
+    git remote add -f origin https://github.com/arctair/hillshade.io
+  fi
+  cd hillshade.io
+  if ! grep heightmapper .git/info/sparse-checkout 2&>/dev/null ; then
+    git config core.sparseCheckout true
+    echo heightmapper >> .git/info/sparse-checkout
+  fi
+  git fetch origin main
+  git reset origin/main --hard
+  cd heightmapper
+  npm i
+  if [ -L $HOME/.config/systemd/user/heightmapper.hillshade.io.service ] ; then
+    systemctl stop --user heightmapper.hillshade.io
+    systemctl disable --user heightmapper.hillshade.io
+  fi
+  ln -s $HOME/hillshade.io/heightmapper/scripts/heightmapper.hillshade.io.service $HOME/.config/systemd/user
+  systemctl enable --user heightmapper.hillshade.io
+EOF

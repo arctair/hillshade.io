@@ -1,0 +1,10 @@
+[Unit]
+Description=heightmapper.hillshade.io
+
+[Service]
+ExecStart=/usr/local/bin/npm start
+Type=simple
+WorkingDirectory=/home/arctair/hillshade.io/heightmapper
+
+[Install]
+WantedBy=default.target

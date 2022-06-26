@@ -1,0 +1,13 @@
+#!/bin/zsh
+cat <<EOF | ssh yagni -T
+    source /usr/share/nvm/init-nvm.sh
+
+    cd /home/arctair/hillshade.io
+    git fetch
+    git reset origin/main --hard
+    cd heightmapper
+    nvm install
+    npm install
+    systemctl daemon-reload --user
+    systemctl restart heightmapper.hillshade.io --user
+EOF

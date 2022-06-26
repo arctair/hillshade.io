@@ -1,0 +1,4 @@
+#!/bin/zsh
+setopt verbose
+set -e
+scripts/deploy-yagni
