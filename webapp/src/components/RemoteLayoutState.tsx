@@ -3,11 +3,12 @@ import { KeyedLayout, Layout } from './types'
 import ViewState, { selectLayout, useViewState } from './ViewState'
 import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
 
-type Action = CreateStart | CreateSuccess | CreateFailure
+type Action = CreateStart | CreateSuccess | CreateFailure | Forget
 enum ActionType {
   CreateStart,
   CreateSuccess,
   CreateFailure,
+  Forget,
   HeightmapURLAvailable,
 }
 
@@ -20,11 +21,16 @@ interface State {
 
 interface ContextOperations {
   createLayout: () => void
+  forgetLayout: () => void
 }
 
+const errNoContextProvider = 'no context provider in tree'
 const Context = React.createContext<[State, ContextOperations]>([
   defaultState,
-  { createLayout: () => console.error('no context provider in tree') },
+  {
+    createLayout: () => console.error(errNoContextProvider),
+    forgetLayout: () => console.error(errNoContextProvider),
+  },
 ])
 
 export function useRemoteLayoutState() {
@@ -44,7 +50,10 @@ export function RemoteLayoutProvider({
       children={children}
       value={[
         state,
-        { createLayout: () => createLayout(dispatch, state, viewState) },
+        {
+          createLayout: () => createLayout(dispatch, state, viewState),
+          forgetLayout: () => dispatch({ type: ActionType.Forget }),
+        },
       ]}
     />
   )
@@ -58,6 +67,8 @@ function reducer(state: State, action: Action) {
       return reduceCreateSuccess(state, action as CreateSuccess)
     case ActionType.CreateFailure:
       return reduceCreateFailure(state, action as CreateFailure)
+    case ActionType.Forget:
+      return reduceForget(state, action as Forget)
     case ActionType.HeightmapURLAvailable:
       return reduceHeightmapURLAvailable(
         state,
@@ -76,6 +87,10 @@ function reduceCreateSuccess(_: State, action: CreateSuccess) {
 
 function reduceCreateFailure(_: State, action: CreateFailure) {
   return { errors: action.errors }
+}
+
+function reduceForget(_: State, action: Forget) {
+  return { errors: [] }
 }
 
 function reduceHeightmapURLAvailable(
@@ -145,6 +160,10 @@ interface CreateFailureProps {
   errors: string[]
 }
 interface CreateFailure extends CreateFailureProps {
+  type: ActionType
+}
+
+interface Forget {
   type: ActionType
 }
 

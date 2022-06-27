@@ -5,8 +5,10 @@ import { selectLayout, useViewState } from './ViewState'
 
 export default function RenderControls() {
   const [viewState] = useViewState()
-  const [{ errors, layout: remoteLayout }, { createLayout }] =
-    useRemoteLayoutState()
+  const [
+    { errors, layout: remoteLayout },
+    { createLayout, forgetLayout },
+  ] = useRemoteLayoutState()
   const layout = selectLayout(viewState)
   layout.extent = transformExtent(layout.extent, TILE_TO_EPSG_3857)
   return (
@@ -16,6 +18,7 @@ export default function RenderControls() {
       <div style={{ fontWeight: 'bold' }}>
         remote layout&nbsp;
         <button onClick={() => createLayout()}>+</button>
+        {remoteLayout && <button onClick={() => forgetLayout()}>-</button>}
       </div>
       {errors.map((error) => (
         <div style={{ color: 'red' }}>{error}</div>
