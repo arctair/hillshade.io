@@ -5,7 +5,7 @@ import { errKeyNotFound, errNoContentType, Store } from './Store'
 export default function Router(store: Store) {
   return express
     .Router()
-    .use(express.raw({ type: '*/*', limit: '1kb' }))
+    .use(express.raw({ type: '*/*' }))
     .post('/images', (request: Request, response: Response) => {
       const contentType = request.header('Content-Type')!
       const [key, error] = store.create(contentType, request.body)
