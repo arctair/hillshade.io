@@ -56,18 +56,21 @@ describe('router', () => {
   })
 
   describe('get image', () => {
-    test('proxy key up and content type down', async () => {
-      store.get.mockReturnValue(['image/png', undefined])
+    test('proxy key up and content type and body down', async () => {
+      store.get.mockReturnValue([
+        'image/png',
+        Buffer.from('some image maybe'),
+        undefined,
+      ])
       const response = await request(app).get('/images/abcd.jpg')
       expect(response.status).toEqual(200)
-      expect(response.headers['content-type']).toBe(
-        'image/png; charset=utf-8',
-      )
+      expect(response.headers['content-type']).toBe('image/png')
+      expect(response.body).toStrictEqual(Buffer.from('some image maybe'))
       expect(store.get).toHaveBeenCalledWith('abcd')
     })
 
     test('proxy key up and error down with default server error status', async () => {
-      store.get.mockReturnValue([undefined, 'boom'])
+      store.get.mockReturnValue([undefined, undefined, 'boom'])
       const response = await request(app).get('/images/abcd.png')
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({ error: 'boom' })
@@ -75,7 +78,7 @@ describe('router', () => {
     })
 
     test('proxy key up and key not found error down with not found error status', async () => {
-      store.get.mockReturnValue([undefined, errKeyNotFound])
+      store.get.mockReturnValue([undefined, undefined, errKeyNotFound])
       const response = await request(app).get('/images/bdca.tif')
       expect(response.status).toEqual(404)
       expect(response.body).toEqual({ error: errKeyNotFound })

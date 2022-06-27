@@ -6,7 +6,7 @@ export const errKeyNotFound = 'That image key is not present'
 
 export type Store = {
   create: (contentType: string, data: any) => [string?, string?]
-  get: (key: string) => [string?, string?]
+  get: (key: string) => [string?, Buffer?, string?]
 }
 export default function Store(): Store {
   const contentTypeByKey = new Map<string, string>()
@@ -20,8 +20,8 @@ export default function Store(): Store {
     get: (key) => {
       const contentType = contentTypeByKey.get(key)
       return contentType
-        ? [contentType, undefined]
-        : [undefined, errKeyNotFound]
+        ? [contentType, undefined, undefined]
+        : [undefined, undefined, errKeyNotFound]
     },
   }
 }

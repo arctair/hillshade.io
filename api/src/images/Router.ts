@@ -21,13 +21,12 @@ export default function Router(store: Store) {
     .get(
       '/images/:key.:extension',
       (request: Request, response: Response) => {
-        const [contentType, error] = store.get(request.params['key'])
+        const [contentType, buffer, error] = store.get(
+          request.params['key'],
+        )
         switch (error) {
           case undefined:
-            return response
-              .status(200)
-              .type(contentType!)
-              .send(new Uint8Array())
+            return response.status(200).type(contentType!).send(buffer)
           case errKeyNotFound:
             return response.status(404).send({ error })
           default:
