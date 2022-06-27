@@ -1,7 +1,7 @@
 import express from 'express'
 import request from 'supertest'
 import { Router } from './Router'
-import { errNoLayoutWithKey } from './Store'
+import { errKeyNotFound } from './Store'
 
 describe('layout router', () => {
   const checker = {
@@ -18,92 +18,91 @@ describe('layout router', () => {
   const app = express()
   app.use('/', Router(checker, store))
 
-  test('get layouts', async () => {
+  test('get layouts - proxy keyed layouts down', async () => {
     store.getAll.mockReturnValue({ layouts: [] })
     const response = await request(app).get('/')
     expect(response.status).toEqual(200)
     expect(response.body).toEqual({ layouts: [] })
   })
 
-  test('create layout', async () => {
-    const upLayout = { size: [256, 256] }
-    const downLayout = { key: 'abcd', size: [256, 256] }
-    checker.create.mockReturnValue([])
-    store.create.mockReturnValue(downLayout)
+  describe('create', () => {
+    test('proxy layout up and proxy keyed layout down ', async () => {
+      checker.create.mockReturnValue([])
+      store.create.mockReturnValue({ key: 'abcd', size: [256, 256] })
+      const response = await request(app)
+        .post('/')
+        .send({ size: [256, 256] })
+      expect(response.status).toEqual(201)
+      expect(response.body).toEqual({ key: 'abcd', size: [256, 256] })
+      expect(store.create).toHaveBeenCalledWith({ size: [256, 256] })
+    })
 
-    const response = await request(app).post('/').send(upLayout)
+    test('proxy layout up and proxy check error down with bad request status code', async () => {
+      checker.create.mockReturnValue([
+        'Field "size" of type [number, number] is missing',
+      ])
+      const upLayout = { dorp: 'dorp' }
+      const response = await request(app).post('/').send(upLayout)
 
-    expect(response.status).toEqual(201)
-    expect(store.create).toHaveBeenCalledWith(upLayout)
-    expect(response.body).toEqual(downLayout)
-  })
-
-  test('create malformed layout returns 400 bad request with descriptive error', async () => {
-    checker.create.mockReturnValue([
-      'Field "size" of type [number, number] is missing',
-    ])
-    const upLayout = { dorp: 'dorp' }
-    const response = await request(app).post('/').send(upLayout)
-
-    expect(checker.create).toHaveBeenCalledWith(upLayout)
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual({
-      errors: ['Field "size" of type [number, number] is missing'],
+      expect(checker.create).toHaveBeenCalledWith(upLayout)
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({
+        errors: ['Field "size" of type [number, number] is missing'],
+      })
     })
   })
 
-  test('upsert layout with heightmap url', async () => {
-    const upLayoutPatch = { heightmapURL: 'new url' }
-    const downLayout = { down: 'layout' }
-    checker.patch.mockReturnValue([])
-    store.patch.mockReturnValue([downLayout, undefined])
-    const response = await request(app)
-      .patch('/layouts/abcdefg')
-      .send(upLayoutPatch)
+  describe('patch', () => {
+    test('proxy patch up and proxy keyed layout down', async () => {
+      checker.patch.mockReturnValue([])
+      store.patch.mockReturnValue([{ down: 'layout' }, undefined])
+      const response = await request(app)
+        .patch('/layouts/abcdefg')
+        .send({ any: 'patch' })
 
-    expect(response.status).toEqual(200)
-    expect(response.body).toEqual(downLayout)
-    expect(store.patch).toHaveBeenCalledWith('abcdefg', upLayoutPatch)
-  })
-
-  test('upsert malformed patch returns 400 bad request with descriptive error', async () => {
-    const upPatch = { the: 'patch' }
-    const downErrors = ['the errors']
-    checker.patch.mockReturnValue(downErrors)
-    const response = await request(app)
-      .patch('/layouts/abcdefg')
-      .send(upPatch)
-
-    expect(response.status).toEqual(400)
-    expect(response.body).toEqual({ errors: downErrors })
-    expect(checker.patch).toHaveBeenCalledWith(upPatch)
-  })
-
-  test('upsert patch to key that is not present', async () => {
-    const upPatch = { the: 'patch' }
-    checker.patch.mockReturnValue([])
-    store.patch.mockReturnValue([null, errNoLayoutWithKey])
-    const response = await request(app)
-      .patch('/layouts/abcdefg')
-      .send(upPatch)
-
-    expect(response.status).toEqual(404)
-    expect(response.body).toEqual({
-      errors: [errNoLayoutWithKey],
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({ down: 'layout' })
+      expect(store.patch).toHaveBeenCalledWith('abcdefg', { any: 'patch' })
     })
-  })
 
-  test('upsert patch generic error', async () => {
-    const upPatch = { another: 'patch' }
-    checker.patch.mockReturnValue([])
-    store.patch.mockReturnValue([null, 'another error'])
-    const response = await request(app)
-      .patch('/layouts/fhfhfh')
-      .send(upPatch)
+    test('proxy patch up and proxy patch check error down with bad request status code', async () => {
+      checker.patch.mockReturnValue(['the errors'])
+      const response = await request(app)
+        .patch('/layouts/abcdefg')
+        .send({ the: 'patch' })
+      expect(response.status).toEqual(400)
+      expect(response.body).toEqual({ errors: ['the errors'] })
+      expect(checker.patch).toHaveBeenCalledWith({ the: 'patch' })
+    })
 
-    expect(response.status).toEqual(500)
-    expect(response.body).toEqual({
-      errors: ['another error'],
+    test('proxy patch up and proxy key not found error down with not found status code', async () => {
+      checker.patch.mockReturnValue([])
+      store.patch.mockReturnValue([null, errKeyNotFound])
+      const response = await request(app)
+        .patch('/layouts/abcdefg')
+        .send({ the: 'patch' })
+
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({
+        errors: [errKeyNotFound],
+      })
+      expect(store.patch).toHaveBeenCalledWith('abcdefg', { the: 'patch' })
+    })
+
+    test('proxy patch up and proxy error down with default server error status code', async () => {
+      checker.patch.mockReturnValue([])
+      store.patch.mockReturnValue([null, 'another error'])
+      const response = await request(app)
+        .patch('/layouts/fhfhfh')
+        .send({ another: 'patch' })
+
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({
+        errors: ['another error'],
+      })
+      expect(store.patch).toHaveBeenCalledWith('fhfhfh', {
+        another: 'patch',
+      })
     })
   })
 })

@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid'
 import { KeyedLayout, Layout, LayoutPatch } from './types'
 
-export const errNoLayoutWithKey = 'This key is not present'
+export const errKeyNotFound = 'This key is not present'
 
 export type Store = {
   getAll: () => { layouts: KeyedLayout[] }
@@ -26,7 +26,7 @@ export function Store(): Store {
           layout.heightmapURL = patch.heightmapURL
           return [layout, undefined]
         } else {
-          return [undefined, errNoLayoutWithKey]
+          return [undefined, errKeyNotFound]
         }
       } catch (e) {
         return [undefined, (e as Error).message]

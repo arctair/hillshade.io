@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 import { Checks } from './checks'
-import { errNoLayoutWithKey, Store } from './Store'
+import { errKeyNotFound, Store } from './Store'
 
 export const Router = (
   checks: {
@@ -39,7 +39,7 @@ export const Router = (
       switch (error) {
         case undefined:
           return response.send(layout)
-        case errNoLayoutWithKey:
+        case errKeyNotFound:
           return response.status(404).send({ errors: [error] })
         default:
           return response.status(500).send({ errors: [error] })
