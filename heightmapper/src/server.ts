@@ -37,16 +37,18 @@ async function tick() {
 
       const warpPath = `${workspace}/heightmap.tif`
       await new Promise<void>((resolve, reject) => {
-        const process = spawn('zsh', [
-          '-c',
-          `gdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} -overwrite ${globalElevationFilePath} ${warpPath}`,
-        ])
+        const process = spawnzsh(
+          `gdalwarp -t_srs EPSG:3857`,
+          `-te ${left} ${bottom} ${right} ${top}`,
+          `-ts ${width} ${height}`,
+          `${globalElevationFilePath} ${warpPath}`,
+        )
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
 
       const [min, max] = await new Promise<[number, number]>(
         (resolve, reject) => {
-          const process = spawn('zsh', ['-c', `gdalinfo -mm ${warpPath}`])
+          const process = spawnzsh(`gdalinfo -mm ${warpPath}`)
           bufferLines(process.stdout, (line) => {
             if (line.indexOf('Computed Min/Max') > -1) {
               const [_, part] = line.split('=')
@@ -60,10 +62,11 @@ async function tick() {
 
       const translatePath = `${workspace}/heightmap.jpg`
       await new Promise<void>((resolve, reject) => {
-        const process = spawn('zsh', [
-          '-c',
-          `gdal_translate -scale ${min} ${max} 0 255 ${warpPath} ${translatePath}`,
-        ])
+        const process = spawnzsh(
+          `gdal_translate`,
+          `-scale ${min} ${max} 0 255`,
+          `${warpPath} ${translatePath}`,
+        )
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
 
@@ -95,6 +98,10 @@ interface KeyedLayout {
   size: [number, number]
   extent: [number, number, number, number]
   heightmapURL: string
+}
+
+function spawnzsh(...command: string[]) {
+  return spawn('zsh', ['-c', command.join(' ')])
 }
 
 function bufferLines(stream: Readable, consumer: (line: string) => void) {
