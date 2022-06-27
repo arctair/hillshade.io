@@ -1,4 +1,4 @@
 #!/bin/zsh
 source /usr/share/nvm/init-nvm.sh
 nvm use
-node build/server.js
+VERSION=`git rev-parse --short HEAD` node build/server.js
