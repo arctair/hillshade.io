@@ -1,10 +1,24 @@
+import { spawn } from 'child_process'
+import { createReadStream, mkdir as mkdirSync, rm as rmSync } from 'fs'
 import nodeFetch from 'node-fetch'
+import { Readable } from 'stream'
+import { promisify } from 'util'
+
+const mkdir = promisify(mkdirSync)
+const rm = promisify(rmSync)
 
 const version = process.env.VERSION || 'dev'
+const globalElevationFilePath = process.env.GLOBAL_ELEVATION_FILE
 
 console.log('heightmapper version', version)
 
-setInterval(tick, 1000)
+setInterval(async () => {
+  try {
+    await tick()
+  } catch (e) {
+    console.error(e)
+  }
+}, 1000)
 
 async function tick() {
   const response = await nodeFetch('https://api.hillshade.io')
@@ -18,21 +32,35 @@ async function tick() {
     size: [width, height],
   } of layouts) {
     if (!heightmapURL) {
-      const response = await nodeFetch(`https://api.hillshade.io/images`, {
+      const workspace = `/tmp/heightmapper/${key}`
+      const destination = `${workspace}/heightmap.jpg`
+      await mkdir(workspace, { recursive: true })
+      await new Promise<void>((resolve, reject) => {
+        const process = spawn('zsh', [
+          '-c',
+          `gdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} -overwrite ${globalElevationFilePath} ${destination}`,
+        ])
+        // regurgitate(process.stdout, console.log)
+        // regurgitate(process.stderr, console.error)
+        process.on('exit', (code) => (code === 0 ? resolve() : reject()))
+      })
+      let response = await nodeFetch(`https://api.hillshade.io/images`, {
         method: 'post',
-        headers: { 'Content-Type': 'application/x-zsh' },
-        body: Buffer.from(
-          `#!/bin/zsh\ngdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} faster/usgs-3dep-1.vrt /tmp/${key}.jpg`,
-        ),
+        headers: { 'Content-Type': 'image/jpg' },
+        body: createReadStream(destination),
       })
       const { key: attachmentKey } = await response.json()
-      await nodeFetch(`https://api.hillshade.io/layouts/${key}`, {
-        method: 'patch',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          heightmapURL: `https://api.hillshade.io/images/${attachmentKey}.zsh`,
-        }),
-      })
+      response = await nodeFetch(
+        `https://api.hillshade.io/layouts/${key}`,
+        {
+          method: 'patch',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            heightmapURL: `https://api.hillshade.io/images/${attachmentKey}.jpg`,
+          }),
+        },
+      )
+      await rm(workspace, { recursive: true })
     }
   }
 }
@@ -42,4 +70,16 @@ interface KeyedLayout {
   size: [number, number]
   extent: [number, number, number, number]
   heightmapURL: string
+}
+
+function regurgitate(stream: Readable, fn: (v: string) => void) {
+  let buffer = ''
+  stream.on('data', (data) => {
+    buffer += data.toString()
+    const lines = buffer.split('\n')
+    for (let index = 0; index < lines.length - 1; index++) {
+      console.log(lines[index])
+    }
+    buffer = lines[lines.length - 1]
+  })
 }
