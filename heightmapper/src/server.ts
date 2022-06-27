@@ -41,8 +41,6 @@ async function tick() {
           '-c',
           `gdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} -overwrite ${globalElevationFilePath} ${warpPath}`,
         ])
-        // bufferLines(process.stdout, console.log)
-        // bufferLines(process.stderr, console.error)
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
 
@@ -56,7 +54,6 @@ async function tick() {
               resolve([min, max])
             }
           })
-          // bufferLines(process.stderr, console.error)
           process.on('exit', (code) => code !== 0 && reject())
         },
       )
@@ -67,8 +64,6 @@ async function tick() {
           '-c',
           `gdal_translate -scale ${min} ${max} 0 255 ${warpPath} ${translatePath}`,
         ])
-        // bufferLines(process.stdout, console.log)
-        // bufferLines(process.stderr, console.error)
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
 
@@ -102,13 +97,13 @@ interface KeyedLayout {
   heightmapURL: string
 }
 
-function bufferLines(stream: Readable, fn: (v: string) => void) {
+function bufferLines(stream: Readable, consumer: (line: string) => void) {
   let buffer = ''
   stream.on('data', (data) => {
     buffer += data.toString()
     const lines = buffer.split('\n')
     for (let index = 0; index < lines.length - 1; index++) {
-      fn(lines[index])
+      consumer(lines[index])
     }
     buffer = lines[lines.length - 1]
   })
