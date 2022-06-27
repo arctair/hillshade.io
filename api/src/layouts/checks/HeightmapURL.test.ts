@@ -1,8 +1,4 @@
-import {
-  checkPresent,
-  checkNotPresent,
-  errors,
-} from './HeightmapURLChecker'
+import { checkPresent, checkNotPresent, errors } from './HeightmapURL'
 
 describe('heightmap url is not present', () => {
   test('no errors', () => {

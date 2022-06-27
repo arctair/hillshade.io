@@ -1,4 +1,4 @@
-import { check, errors } from './SizeChecker'
+import { check, errors } from './Size'
 
 describe('checker', () => {
   test('no errors', () => {

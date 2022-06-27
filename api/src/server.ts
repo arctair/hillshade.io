@@ -1,29 +1,29 @@
-import { check as checkExtent } from './layouts/checks/ExtentChecker'
-import { check as checkSize } from './layouts/checks/SizeChecker'
+import { App } from './App'
+import { Router as LayoutRouter } from './layouts/Router'
+import { Router as VersionRouter } from './VersionRouter'
+import { Store as LayoutStore } from './layouts/Store'
+import { check as CheckExtent } from './layouts/checks/Extent'
+import { check as CheckSize } from './layouts/checks/Size'
 import {
-  checkNotPresent as checkHeightmapURLNotPresent,
-  checkPresent as checkHeightmapURLPresent,
-} from './layouts/checks/HeightmapURLChecker'
-import { create as createChecks } from './layouts/checks'
-import { create as createApp } from './App'
-import { create as createLayoutRouter } from './layouts/Router'
-import { create as createLayoutStore } from './layouts/Store'
-import { create as createVersionRouter } from './VersionRouter'
+  checkNotPresent as CheckHeightmapURLNotPresent,
+  checkPresent as CheckHeightmapURLPresent,
+} from './layouts/checks/HeightmapURL'
+import { create as CheckAll } from './layouts/checks'
 
 const version = process.env.VERSION || 'dev'
 const port = process.env.PORT || 8080
-const app = createApp(
-  createVersionRouter(version),
-  createLayoutRouter(
+const app = App(
+  VersionRouter(version),
+  LayoutRouter(
     {
-      create: createChecks(
-        checkExtent,
-        checkSize,
-        checkHeightmapURLNotPresent,
+      create: CheckAll(
+        CheckExtent,
+        CheckSize,
+        CheckHeightmapURLNotPresent,
       ),
-      patch: createChecks(checkHeightmapURLPresent),
+      patch: CheckAll(CheckHeightmapURLPresent),
     },
-    createLayoutStore(),
+    LayoutStore(),
   ),
 )
 app.listen(port, () => console.log(`0.0.0.0:${port}`))

@@ -1,13 +1,7 @@
 import express from 'express'
 
-export const create = (
-  versionRouter: express.Router,
-  layoutRouter: express.Router,
-) => {
+export const App = (...routers: express.Router[]) => {
   const app = express()
-
-  app.use('/', layoutRouter)
-  app.use('/', versionRouter)
-
+  routers.forEach((router) => app.use('/', router))
   return app
 }

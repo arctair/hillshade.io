@@ -9,7 +9,7 @@ export type Store = {
   patch: (id: string, patch: LayoutPatch) => [KeyedLayout?, string?]
 }
 
-export function create(): Store {
+export function Store(): Store {
   const layouts = new Array<KeyedLayout>()
   return {
     getAll: () => ({ layouts }),

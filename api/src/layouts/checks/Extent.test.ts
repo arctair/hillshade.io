@@ -1,4 +1,4 @@
-import { check, errors } from './ExtentChecker'
+import { check, errors } from './Extent'
 
 describe('checker', () => {
   test('no errors', () => {
