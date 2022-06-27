@@ -1,6 +1,7 @@
 import express from 'express'
 import request from 'supertest'
 import Router from './Router'
+import { errNoContentType } from './Store'
 
 describe('router', () => {
   const store = {
@@ -28,5 +29,13 @@ describe('router', () => {
     expect(response.status).toEqual(500)
     expect(response.body).toEqual({ error: 'random error' })
     expect(store.create).toHaveBeenCalledWith('image/jpg')
+  })
+
+  test('post image with no content type results in bad request', async () => {
+    store.create.mockReturnValue([undefined, errNoContentType])
+    const response = await request(app).post('/images')
+    expect(response.status).toEqual(400)
+    expect(response.body).toEqual({ error: errNoContentType })
+    expect(store.create).toHaveBeenCalledWith(undefined)
   })
 })
