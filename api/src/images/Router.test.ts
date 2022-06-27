@@ -1,7 +1,7 @@
 import express from 'express'
 import request from 'supertest'
 import Router from './Router'
-import { errNoContentType } from './Store'
+import { errKeyNotFound, errNoContentType } from './Store'
 
 describe('router', () => {
   const store = {
@@ -59,6 +59,14 @@ describe('router', () => {
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({ error: 'boom' })
       expect(store.get).toHaveBeenCalledWith('abcd.png')
+    })
+
+    test('proxy key up and key not found error down with not found error status', async () => {
+      store.get.mockReturnValue([undefined, errKeyNotFound])
+      const response = await request(app).get('/images/bdca.tif')
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ error: errKeyNotFound })
+      expect(store.get).toHaveBeenCalledWith('bdca.tif')
     })
   })
 })

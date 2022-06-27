@@ -1,5 +1,6 @@
 export const errNoContentType =
   'Uploaded images must have a content-type header'
+export const errKeyNotFound = 'That image key is not present'
 
 export type Store = {
   create: (contentType: string) => [string?, string?]

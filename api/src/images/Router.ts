@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express'
 
-import { errNoContentType, Store } from './Store'
+import { errKeyNotFound, errNoContentType, Store } from './Store'
 
 export default function Router(store: Store) {
   return express
@@ -25,6 +25,8 @@ export default function Router(store: Store) {
             .status(200)
             .type(contentType!)
             .send(new Uint8Array())
+        case errKeyNotFound:
+          return response.status(404).send({ error })
         default:
           return response.status(500).send({ error })
       }
