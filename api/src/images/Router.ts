@@ -17,18 +17,21 @@ export default function Router(store: Store) {
           return response.status(500).send({ error })
       }
     })
-    .get('/images/:key', (request: Request, response: Response) => {
-      const [contentType, error] = store.get(request.params['key'])
-      switch (error) {
-        case undefined:
-          return response
-            .status(200)
-            .type(contentType!)
-            .send(new Uint8Array())
-        case errKeyNotFound:
-          return response.status(404).send({ error })
-        default:
-          return response.status(500).send({ error })
-      }
-    })
+    .get(
+      '/images/:key.:extension',
+      (request: Request, response: Response) => {
+        const [contentType, error] = store.get(request.params['key'])
+        switch (error) {
+          case undefined:
+            return response
+              .status(200)
+              .type(contentType!)
+              .send(new Uint8Array())
+          case errKeyNotFound:
+            return response.status(404).send({ error })
+          default:
+            return response.status(500).send({ error })
+        }
+      },
+    )
 }
