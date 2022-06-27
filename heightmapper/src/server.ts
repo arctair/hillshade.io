@@ -34,22 +34,21 @@ async function tick() {
     if (!heightmapURL) {
       const workspace = `/tmp/heightmapper/${key}`
       await mkdir(workspace, { recursive: true })
-      const destination = `${workspace}/heightmap.jpg`
+
+      const warpPath = `${workspace}/heightmap.tif`
       await new Promise<void>((resolve, reject) => {
         const process = spawn('zsh', [
           '-c',
-          `gdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} -overwrite ${globalElevationFilePath} ${destination}`,
+          `gdalwarp -t_srs EPSG:3857 -te ${left} ${bottom} ${right} ${top} -ts ${width} ${height} -overwrite ${globalElevationFilePath} ${warpPath}`,
         ])
-        // regurgitate(process.stdout, console.log)
-        // regurgitate(process.stderr, console.error)
+        // bufferLines(process.stdout, console.log)
+        // bufferLines(process.stderr, console.error)
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
+
       const [min, max] = await new Promise<[number, number]>(
         (resolve, reject) => {
-          const process = spawn('zsh', [
-            '-c',
-            `gdalinfo -mm ${destination}`,
-          ])
+          const process = spawn('zsh', ['-c', `gdalinfo -mm ${warpPath}`])
           bufferLines(process.stdout, (line) => {
             if (line.indexOf('Computed Min/Max') > -1) {
               const [_, part] = line.split('=')
@@ -57,17 +56,29 @@ async function tick() {
               resolve([min, max])
             }
           })
-          // regurgitate(process.stderr, console.error)
+          // bufferLines(process.stderr, console.error)
           process.on('exit', (code) => code !== 0 && reject())
         },
       )
-      console.log('heightmap generated for', key, 'has min max', min, max)
+
+      const translatePath = `${workspace}/heightmap.jpg`
+      await new Promise<void>((resolve, reject) => {
+        const process = spawn('zsh', [
+          '-c',
+          `gdal_translate -scale ${min} ${max} 0 255 ${warpPath} ${translatePath}`,
+        ])
+        // bufferLines(process.stdout, console.log)
+        // bufferLines(process.stderr, console.error)
+        process.on('exit', (code) => (code === 0 ? resolve() : reject()))
+      })
+
       let response = await nodeFetch(`https://api.hillshade.io/images`, {
         method: 'post',
         headers: { 'Content-Type': 'image/jpg' },
-        body: createReadStream(destination),
+        body: createReadStream(translatePath),
       })
       const { key: attachmentKey } = await response.json()
+
       response = await nodeFetch(
         `https://api.hillshade.io/layouts/${key}`,
         {
@@ -78,6 +89,7 @@ async function tick() {
           }),
         },
       )
+
       await rm(workspace, { recursive: true })
     }
   }
