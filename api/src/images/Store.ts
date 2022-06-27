@@ -11,5 +11,6 @@ export default function Store(): Store {
       undefined,
       `dummy image store got content type ${contentType}`,
     ],
+    get: (key) => [undefined, `dummy image store cannot get key ${key}`],
   }
 }

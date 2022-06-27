@@ -17,4 +17,16 @@ export default function Router(store: Store) {
           return response.status(500).send({ error })
       }
     })
+    .get('/images/:key', (request: Request, response: Response) => {
+      const [contentType, error] = store.get(request.params['key'])
+      switch (error) {
+        case undefined:
+          return response
+            .status(200)
+            .type(contentType!)
+            .send(new Uint8Array())
+        default:
+          return response.status(500).send({ error })
+      }
+    })
 }

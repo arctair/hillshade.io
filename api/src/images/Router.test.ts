@@ -6,6 +6,7 @@ import { errNoContentType } from './Store'
 describe('router', () => {
   const store = {
     create: jest.fn(),
+    get: jest.fn(),
   }
 
   const app = express()
@@ -37,5 +38,23 @@ describe('router', () => {
     expect(response.status).toEqual(400)
     expect(response.body).toEqual({ error: errNoContentType })
     expect(store.create).toHaveBeenCalledWith(undefined)
+  })
+
+  test('get image', async () => {
+    store.get.mockReturnValue(['image/png', undefined])
+    const response = await request(app).get('/images/abcd.jpg')
+    expect(response.status).toEqual(200)
+    expect(response.headers['content-type']).toBe(
+      'image/png; charset=utf-8',
+    )
+    expect(store.get).toHaveBeenCalledWith('abcd.jpg')
+  })
+
+  test('get image error', async () => {
+    store.get.mockReturnValue([undefined, 'boom'])
+    const response = await request(app).get('/images/abcd.png')
+    expect(response.status).toEqual(500)
+    expect(response.body).toEqual({ error: 'boom' })
+    expect(store.get).toHaveBeenCalledWith('abcd.png')
   })
 })
