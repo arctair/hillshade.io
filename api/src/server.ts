@@ -10,6 +10,7 @@ import {
 } from './layouts/checks/HeightmapURL'
 import { create as CheckAll } from './layouts/checks'
 import ImageRouter from './images/Router'
+import ImageStore from './images/Store'
 
 const version = process.env.VERSION || 'dev'
 const port = process.env.PORT || 8080
@@ -26,6 +27,6 @@ const app = App(
     },
     LayoutStore(),
   ),
-  ImageRouter(),
+  ImageRouter(ImageStore()),
 )
 app.listen(port, () => console.log(`0.0.0.0:${port}`))
