@@ -5,7 +5,7 @@ export const errNoContentType =
 export const errKeyNotFound = 'That image key is not present'
 
 export type Store = {
-  create: (contentType: string) => [string?, string?]
+  create: (contentType: string, data: any) => [string?, string?]
   get: (key: string) => [string?, string?]
 }
 export default function Store(): Store {

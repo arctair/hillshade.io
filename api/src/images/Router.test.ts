@@ -9,36 +9,49 @@ describe('router', () => {
     get: jest.fn(),
   }
 
+  afterEach(jest.clearAllMocks)
+
   const app = express()
   app.use('/', Router(store))
 
   describe('create image', () => {
-    test('proxy content type up and key down', async () => {
+    test('proxy content type and body up and key down', async () => {
       store.create.mockReturnValue(['abcd', undefined])
       const response = await request(app)
         .post('/images')
         .set('Content-Type', 'image/png')
+        .send('some data')
       expect(response.status).toEqual(201)
       expect(response.body).toEqual({ key: 'abcd' })
-      expect(store.create).toHaveBeenCalledWith('image/png')
+      expect(store.create).toHaveBeenCalledWith(
+        'image/png',
+        Buffer.from('some data'),
+      )
     })
 
-    test('proxy content type up and error down with default server error status', async () => {
+    test('proxy content type and body up and error down with default server error status', async () => {
       store.create.mockReturnValue([undefined, 'random error'])
       const response = await request(app)
         .post('/images')
         .set('Content-Type', 'image/jpg')
+        .send('some other data')
       expect(response.status).toEqual(500)
       expect(response.body).toEqual({ error: 'random error' })
-      expect(store.create).toHaveBeenCalledWith('image/jpg')
+      expect(store.create).toHaveBeenCalledWith(
+        'image/jpg',
+        Buffer.from('some other data'),
+      )
     })
 
-    test('proxy content type up and no content type error down with bad request status', async () => {
+    test('proxy content type and body up and no content type error down with bad request status', async () => {
       store.create.mockReturnValue([undefined, errNoContentType])
-      const response = await request(app).post('/images')
+      const response = await request(app)
+        .post('/images')
+        .send('some more data')
+        .unset('Content-Type')
       expect(response.status).toEqual(400)
       expect(response.body).toEqual({ error: errNoContentType })
-      expect(store.create).toHaveBeenCalledWith(undefined)
+      expect(store.create).toHaveBeenCalledWith(undefined, {})
     })
   })
 

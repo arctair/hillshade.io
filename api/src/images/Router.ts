@@ -5,9 +5,10 @@ import { errKeyNotFound, errNoContentType, Store } from './Store'
 export default function Router(store: Store) {
   return express
     .Router()
+    .use(express.raw({ type: '*/*', limit: '1kb' }))
     .post('/images', (request: Request, response: Response) => {
       const contentType = request.header('Content-Type')!
-      const [key, error] = store.create(contentType)
+      const [key, error] = store.create(contentType, request.body)
       switch (error) {
         case undefined:
           return response.status(201).send({ key })
