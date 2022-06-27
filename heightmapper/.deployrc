@@ -2,3 +2,4 @@
 setopt verbose
 set -e
 scripts/deploy-yagni
+ssh yagni -- journalctl --user -u heightmapper.hillshade.io --follow
