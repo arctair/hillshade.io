@@ -1,5 +1,6 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import MapControls from './MapControls'
+import { useRemoteLayoutState } from './RemoteLayoutState'
 import {
   selectGLExtent2D,
   selectTileExtent2D,
@@ -28,6 +29,8 @@ export default function Cartograph() {
     tileColumnCount: 0,
     tileGridVersion: 0,
   })
+  const [{ layout }] = useRemoteLayoutState()
+  const heightmapURL = layout?.heightmapURL
 
   const [error, setError] = useState('')
   const [viewState, dispatch] = useViewState()
@@ -103,16 +106,6 @@ export default function Cartograph() {
 
   return (
     <div style={{ height: '100%', position: 'relative' }} ref={ref}>
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-          zIndex: 1,
-        }}
-      >
-        <MapControls onEvent={dispatch} />
-      </div>
       <canvas
         style={{
           position: 'absolute',
@@ -120,6 +113,24 @@ export default function Cartograph() {
         }}
         ref={canvasRef}
       />
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <img src={heightmapURL} alt="" />
+      </div>
+      <div
+        style={{
+          position: 'absolute',
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        <MapControls onEvent={dispatch} />
+      </div>
       <span
         style={{
           color: '#E00',
