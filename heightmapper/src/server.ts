@@ -13,11 +13,17 @@ async function tick() {
   }
   for (let layout of layouts) {
     if (!layout.heightmapURL) {
+      const response = await nodeFetch(`https://api.hillshade.io/images`, {
+        method: 'post',
+        headers: { 'Content-Type': 'image/garbage' },
+        body: Buffer.from('asdfqwerty'),
+      })
+      const { key } = await response.json()
       await nodeFetch(`https://api.hillshade.io/layouts/${layout.key}`, {
         method: 'patch',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          heightmapURL: `https://api.hillshade.io/layouts/${layout.key}.jpg`,
+          heightmapURL: `https://api.hillshade.io/images/${key}.garbage`,
         }),
       })
     }
