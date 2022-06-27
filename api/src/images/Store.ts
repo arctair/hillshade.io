@@ -5,23 +5,26 @@ export const errNoContentType =
 export const errKeyNotFound = 'That image key is not present'
 
 export type Store = {
-  create: (contentType: string, data: any) => [string?, string?]
+  create: (contentType: string, buffer: Buffer) => [string?, string?]
   get: (key: string) => [string?, Buffer?, string?]
 }
 export default function Store(): Store {
-  const contentTypeByKey = new Map<string, string>()
+  const contentTypeByKey = new Map<
+    string,
+    { contentType: string; buffer: Buffer }
+  >()
   return {
-    create: (contentType) => {
+    create: (contentType, buffer) => {
       if (!contentType) return [undefined, errNoContentType]
       const key = uuid()
-      contentTypeByKey.set(key, contentType)
+      contentTypeByKey.set(key, { contentType, buffer })
       return [key, undefined]
     },
     get: (key) => {
-      const contentType = contentTypeByKey.get(key)
-      return contentType
-        ? [contentType, undefined, undefined]
-        : [undefined, undefined, errKeyNotFound]
+      const maybe = contentTypeByKey.get(key)
+      if (!maybe) return [undefined, undefined, errKeyNotFound]
+      const { contentType, buffer } = maybe
+      return [contentType, buffer, undefined]
     },
   }
 }
