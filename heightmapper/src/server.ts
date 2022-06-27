@@ -33,8 +33,8 @@ async function tick() {
   } of layouts) {
     if (!heightmapURL) {
       const workspace = `/tmp/heightmapper/${key}`
-      const destination = `${workspace}/heightmap.jpg`
       await mkdir(workspace, { recursive: true })
+      const destination = `${workspace}/heightmap.jpg`
       await new Promise<void>((resolve, reject) => {
         const process = spawn('zsh', [
           '-c',
@@ -44,6 +44,24 @@ async function tick() {
         // regurgitate(process.stderr, console.error)
         process.on('exit', (code) => (code === 0 ? resolve() : reject()))
       })
+      const [min, max] = await new Promise<[number, number]>(
+        (resolve, reject) => {
+          const process = spawn('zsh', [
+            '-c',
+            `gdalinfo -mm ${destination}`,
+          ])
+          bufferLines(process.stdout, (line) => {
+            if (line.indexOf('Computed Min/Max') > -1) {
+              const [_, part] = line.split('=')
+              const [min, max] = part.split(',').map((v) => parseFloat(v))
+              resolve([min, max])
+            }
+          })
+          // regurgitate(process.stderr, console.error)
+          process.on('exit', (code) => code !== 0 && reject())
+        },
+      )
+      console.log('heightmap generated for', key, 'has min max', min, max)
       let response = await nodeFetch(`https://api.hillshade.io/images`, {
         method: 'post',
         headers: { 'Content-Type': 'image/jpg' },
@@ -72,13 +90,13 @@ interface KeyedLayout {
   heightmapURL: string
 }
 
-function regurgitate(stream: Readable, fn: (v: string) => void) {
+function bufferLines(stream: Readable, fn: (v: string) => void) {
   let buffer = ''
   stream.on('data', (data) => {
     buffer += data.toString()
     const lines = buffer.split('\n')
     for (let index = 0; index < lines.length - 1; index++) {
-      console.log(lines[index])
+      fn(lines[index])
     }
     buffer = lines[lines.length - 1]
   })
