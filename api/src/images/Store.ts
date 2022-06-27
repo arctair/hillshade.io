@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid'
+
 export const errNoContentType =
   'Uploaded images must have a content-type header'
 export const errKeyNotFound = 'That image key is not present'
@@ -7,11 +9,19 @@ export type Store = {
   get: (key: string) => [string?, string?]
 }
 export default function Store(): Store {
+  const contentTypeByKey = new Map<string, string>()
   return {
-    create: (contentType) => [
-      undefined,
-      `dummy image store got content type ${contentType}`,
-    ],
-    get: (key) => [undefined, `dummy image store cannot get key ${key}`],
+    create: (contentType) => {
+      if (!contentType) return [undefined, errNoContentType]
+      const key = uuid()
+      contentTypeByKey.set(key, contentType)
+      return [key, undefined]
+    },
+    get: (key) => {
+      const contentType = contentTypeByKey.get(key)
+      return contentType
+        ? [contentType, undefined]
+        : [undefined, errKeyNotFound]
+    },
   }
 }
