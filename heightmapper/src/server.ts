@@ -43,7 +43,9 @@ async function tick() {
           `-ts ${width} ${height}`,
           `${globalElevationFilePath} ${warpPath}`,
         )
-        process.on('exit', (code) => (code === 0 ? resolve() : reject()))
+        process.on('exit', (code) =>
+          code === 0 ? resolve() : reject('warp failed'),
+        )
       })
 
       const [min, max] = await new Promise<[number, number]>(
@@ -56,7 +58,10 @@ async function tick() {
               resolve([min, max])
             }
           })
-          process.on('exit', (code) => code !== 0 && reject())
+          process.on(
+            'exit',
+            (code) => code !== 0 && reject('minmax failed'),
+          )
         },
       )
 
@@ -67,7 +72,9 @@ async function tick() {
           `-scale ${min} ${max} 0 255`,
           `${warpPath} ${translatePath}`,
         )
-        process.on('exit', (code) => (code === 0 ? resolve() : reject()))
+        process.on('exit', (code) =>
+          code === 0 ? resolve() : reject('translate failed'),
+        )
       })
 
       let response = await nodeFetch(`https://api.hillshade.io/images`, {
