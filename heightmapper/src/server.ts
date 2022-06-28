@@ -2,6 +2,7 @@ import { spawn } from 'child_process'
 import { createReadStream, mkdir as mkdirSync, rm as rmSync } from 'fs'
 import nodeFetch from 'node-fetch'
 import { Readable } from 'stream'
+import { buffer } from 'stream/consumers'
 import { promisify } from 'util'
 
 const mkdir = promisify(mkdirSync)
@@ -46,7 +47,7 @@ async function pipeline(
     size: [width, height],
   }: KeyedLayout,
 ) {
-  const warpPath = `${workspace}/heightmap.tif`
+  const warpPath = `${workspace}/warp.tif`
   await new Promise<void>((resolve, reject) => {
     const process = spawnzsh(
       `gdalwarp -t_srs EPSG:3857`,
@@ -73,32 +74,50 @@ async function pipeline(
     },
   )
 
-  const translatePath = `${workspace}/heightmap.jpg`
+  const heightmapPath = `${workspace}/heightmap.tif`
   await new Promise<void>((resolve, reject) => {
     const process = spawnzsh(
       `gdal_translate`,
       `-scale ${min} ${max} 0 255`,
-      `${warpPath} ${translatePath}`,
+      `${warpPath} ${heightmapPath}`,
     )
     process.on('exit', (code) =>
       code === 0 ? resolve() : reject('translate failed'),
     )
   })
 
+  const previewPath = `${workspace}/heightmapPreview.jpg`
+  await new Promise<void>((resolve, reject) => {
+    const process = spawnzsh(
+      `gdal_translate`,
+      `${heightmapPath} ${previewPath}`,
+    )
+    process.on('exit', (code) =>
+      code === 0 ? resolve() : reject('preview failed'),
+    )
+  })
+
   let response = await nodeFetch(`https://api.hillshade.io/images`, {
     method: 'post',
-    headers: { 'Content-Type': 'image/jpg' },
-    body: createReadStream(translatePath),
+    headers: { 'Content-Type': 'image/tif' },
+    body: createReadStream(heightmapPath),
   })
-  const { key: attachmentKey } = await response.json()
+  const { key: heightmapAttachmentKey } = await response.json()
+  const heightmapURL = `https://api.hillshade.io/images/${heightmapAttachmentKey}.tif`
 
-  const heightmapURL = `https://api.hillshade.io/images/${attachmentKey}.jpg`
+  response = await nodeFetch(`https://api.hillshade.io/images`, {
+    method: 'post',
+    headers: { 'Content-Type': 'image/jpg' },
+    body: createReadStream(previewPath),
+  })
+  const { key: previewAttachmentKey } = await response.json()
+  const heightmapPreviewURL = `https://api.hillshade.io/images/${previewAttachmentKey}.jpg`
+
   response = await nodeFetch(`https://api.hillshade.io/layouts/${key}`, {
     method: 'patch',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      heightmapURL,
-      attachments: { heightmapURL },
+      attachments: { heightmapURL, heightmapPreviewURL },
     }),
   })
 }
