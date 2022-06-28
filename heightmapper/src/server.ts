@@ -21,7 +21,7 @@ async function tick() {
       layouts: KeyedLayout[]
     }
     for (let layout of layouts) {
-      if (!layout.heightmapURL) {
+      if (!layout.attachments.heightmapURL) {
         const workspace = `/tmp/heightmapper/${layout.key}`
         try {
           await mkdir(workspace, { recursive: true })
@@ -92,11 +92,13 @@ async function pipeline(
   })
   const { key: attachmentKey } = await response.json()
 
+  const heightmapURL = `https://api.hillshade.io/images/${attachmentKey}.jpg`
   response = await nodeFetch(`https://api.hillshade.io/layouts/${key}`, {
     method: 'patch',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      heightmapURL: `https://api.hillshade.io/images/${attachmentKey}.jpg`,
+      heightmapURL,
+      attachments: { heightmapURL },
     }),
   })
 }
@@ -104,7 +106,7 @@ interface KeyedLayout {
   key: string
   size: [number, number]
   extent: [number, number, number, number]
-  heightmapURL: string
+  attachments: { heightmapURL: string }
 }
 
 function spawnzsh(...command: string[]) {
