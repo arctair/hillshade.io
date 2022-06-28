@@ -30,7 +30,7 @@ export default function Cartograph() {
     tileGridVersion: 0,
   })
   const [{ layout }] = useRemoteLayoutState()
-  const heightmapURL = layout?.heightmapURL
+  const heightmapURL = layout?.attachments.heightmapURL
 
   const [error, setError] = useState('')
   const [viewState, dispatch] = useViewState()
