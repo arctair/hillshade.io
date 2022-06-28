@@ -29,23 +29,36 @@ export const Router = (
 
   router.patch('/layouts/:key', (request: Request, response: Response) => {
     const errors = checks.patch(request.body)
-    if (errors.length > 0) {
-      response.status(400).send({ errors })
-    } else {
-      const [layout, error] = store.patch(
-        request.params['key'],
-        request.body,
-      )
-      switch (error) {
-        case undefined:
-          return response.send(layout)
-        case errKeyNotFound:
-          return response.status(404).send({ errors: [error] })
-        default:
-          return response.status(500).send({ errors: [error] })
+    if (errors.length > 0) return response.status(400).send({ errors })
+
+    let patch = request.body
+    if (patch.attachments)
+      patch = {
+        ...patch,
+        attachments: new Map(Object.entries(patch.attachments)),
       }
+
+    const [layout, error] = store.patch(request.params['key'], patch)
+    switch (error) {
+      case undefined:
+        let body = layout!
+        return response.send({
+          ...body,
+          attachments: map2obj(body.attachments),
+        })
+      case errKeyNotFound:
+        return response.status(404).send({ errors: [error] })
+      default:
+        return response.status(500).send({ errors: [error] })
     }
   })
 
   return router
+}
+
+function map2obj(map: Map<string, string>): any {
+  return Array.from(map).reduce((obj, [key, value]) => {
+    obj[key] = value
+    return obj
+  }, {} as any)
 }

@@ -15,6 +15,8 @@ describe('layout router', () => {
     patch: jest.fn(),
   }
 
+  afterEach(jest.clearAllMocks)
+
   const app = express()
   app.use('/', Router(checker, store))
 
@@ -55,14 +57,40 @@ describe('layout router', () => {
   describe('patch', () => {
     test('proxy patch up and proxy keyed layout down', async () => {
       checker.patch.mockReturnValue([])
-      store.patch.mockReturnValue([{ down: 'layout' }, undefined])
+      store.patch.mockReturnValue([
+        { down: 'layout', attachments: new Map() },
+        undefined,
+      ])
       const response = await request(app)
         .patch('/layouts/abcdefg')
         .send({ any: 'patch' })
 
       expect(response.status).toEqual(200)
-      expect(response.body).toEqual({ down: 'layout' })
+      expect(response.body).toEqual({ down: 'layout', attachments: {} })
       expect(store.patch).toHaveBeenCalledWith('abcdefg', { any: 'patch' })
+    })
+
+    test('proxy patch up with attachments converted to map and keyed layout down with attachments converted to object', async () => {
+      checker.patch.mockReturnValue([])
+      store.patch.mockReturnValue([
+        {
+          attachments: new Map([['heightmap1', 'another jpg']]),
+          another: 'property',
+        },
+        undefined,
+      ])
+      const response = await request(app)
+        .patch('/layouts/asnda')
+        .send({ attachments: { heightmap0: 'some jpg' } })
+
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        attachments: { heightmap1: 'another jpg' },
+        another: 'property',
+      })
+      expect(store.patch).toHaveBeenCalledWith('asnda', {
+        attachments: new Map([['heightmap0', 'some jpg']]),
+      })
     })
 
     test('proxy patch up and proxy patch check error down with bad request status code', async () => {

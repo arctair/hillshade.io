@@ -11,8 +11,8 @@ export function checkNotPresent(layout: any) {
     : undefined
 }
 
-export function checkPresent(layout: any) {
-  return layout.heightmapURL === undefined
+export function checkPresent(patch: any) {
+  return patch.heightmapURL === undefined
     ? errors.HEIGHTMAP_URL_NOT_PRESENT
     : undefined
 }

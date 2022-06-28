@@ -15,21 +15,20 @@ export function Store(): Store {
     getAll: () => ({ layouts }),
     create: (layout) => {
       const key = uuidv4()
-      const keyedLayout = { key, ...layout }
+      const keyedLayout = { ...layout, key, attachments: new Map() }
       layouts.push(keyedLayout)
       return keyedLayout
     },
     patch: (key, patch) => {
-      try {
-        const layout = layouts.find((v) => v.key === key)
-        if (layout) {
-          layout.heightmapURL = patch.heightmapURL
-          return [layout, undefined]
-        } else {
-          return [undefined, errKeyNotFound]
-        }
-      } catch (e) {
-        return [undefined, (e as Error).message]
+      const layout = layouts.find((v) => v.key === key)
+      if (layout) {
+        if (patch.heightmapURL) layout.heightmapURL = patch.heightmapURL
+        patch.attachments?.forEach((value, key) =>
+          layout.attachments.set(key, value),
+        )
+        return [layout, undefined]
+      } else {
+        return [undefined, errKeyNotFound]
       }
     },
   }

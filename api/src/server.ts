@@ -1,4 +1,11 @@
+import ImageRouter from './images/Router'
+import ImageStore from './images/Store'
 import { App } from './App'
+import {
+  CheckPresent as CheckAttachmentsPresent,
+  CheckNotPresent as CheckAttachmentsNotPresent,
+  CheckType as CheckAttachmentsType,
+} from './layouts/checks/Attachments'
 import { Router as LayoutRouter } from './layouts/Router'
 import { Router as VersionRouter } from './VersionRouter'
 import { Store as LayoutStore } from './layouts/Store'
@@ -9,8 +16,6 @@ import {
   checkPresent as CheckHeightmapURLPresent,
 } from './layouts/checks/HeightmapURL'
 import { create as CheckAll } from './layouts/checks'
-import ImageRouter from './images/Router'
-import ImageStore from './images/Store'
 
 const version = process.env.VERSION || 'dev'
 const port = process.env.PORT || 8080
@@ -22,8 +27,15 @@ const app = App(
         CheckExtent,
         CheckSize,
         CheckHeightmapURLNotPresent,
+        CheckAttachmentsNotPresent,
       ),
-      patch: CheckAll(CheckHeightmapURLPresent),
+      patch: CheckAll((patch) => {
+        let error = CheckHeightmapURLPresent(patch)
+        if (!error) return undefined
+        error = CheckAttachmentsPresent(patch)
+        if (error) return error
+        return CheckAttachmentsType(patch)
+      }),
     },
     LayoutStore(),
   ),
