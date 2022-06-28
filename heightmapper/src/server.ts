@@ -78,7 +78,8 @@ async function pipeline(
   await new Promise<void>((resolve, reject) => {
     const process = spawnzsh(
       `gdal_translate`,
-      `-scale ${min} ${max} 0 255`,
+      `-ot UInt16`,
+      `-scale ${min} ${max} 0 65535`,
       `${warpPath} ${heightmapPath}`,
     )
     process.on('exit', (code) =>
@@ -90,7 +91,9 @@ async function pipeline(
   await new Promise<void>((resolve, reject) => {
     const process = spawnzsh(
       `gdal_translate`,
-      `${heightmapPath} ${previewPath}`,
+      `-ot Byte`,
+      `-scale ${min} ${max} 0 255`,
+      `${warpPath} ${previewPath}`,
     )
     process.on('exit', (code) =>
       code === 0 ? resolve() : reject('preview failed'),
