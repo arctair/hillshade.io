@@ -15,22 +15,26 @@ console.log('heightmapper version', version)
 setInterval(tick, 1000)
 
 async function tick() {
-  const response = await nodeFetch('https://api.hillshade.io')
-  const { layouts } = (await response.json()) as {
-    layouts: KeyedLayout[]
-  }
-  for (let layout of layouts) {
-    if (!layout.heightmapURL) {
-      const workspace = `/tmp/heightmapper/${layout.key}`
-      try {
-        await mkdir(workspace, { recursive: true })
-        await pipeline(workspace, layout)
-      } catch (e) {
-        console.error('failed to pipeline', layout.key, e)
-      } finally {
-        await rm(workspace, { recursive: true })
+  try {
+    const response = await nodeFetch('https://api.hillshade.io')
+    const { layouts } = (await response.json()) as {
+      layouts: KeyedLayout[]
+    }
+    for (let layout of layouts) {
+      if (!layout.heightmapURL) {
+        const workspace = `/tmp/heightmapper/${layout.key}`
+        try {
+          await mkdir(workspace, { recursive: true })
+          await pipeline(workspace, layout)
+        } catch (e) {
+          console.error('failed to pipeline', layout.key, e)
+        } finally {
+          await rm(workspace, { recursive: true })
+        }
       }
     }
+  } catch (e) {
+    console.error('failed tick', e)
   }
 }
 
