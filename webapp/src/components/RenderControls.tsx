@@ -52,6 +52,11 @@ function KeyedLayoutSummary({ layout }: KeyedLayoutSummaryProps) {
       {layout.attachments.heightmapURL && (
         <div>heightmap URL: {layout.attachments.heightmapURL}</div>
       )}
+      {layout.attachments.heightmapPreviewURL && (
+        <div>
+          heightmap preview URL: {layout.attachments.heightmapPreviewURL}
+        </div>
+      )}
     </>
   ) : null
 }

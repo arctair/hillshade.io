@@ -127,7 +127,7 @@ async function createLayout(
       const response = await fetch('https://api.hillshade.io')
       const { layouts }: { layouts: KeyedLayout[] } = await response.json()
       const updatedLayout = layouts.find(({ key }) => key === layout.key)!
-      if (updatedLayout.attachments.heightmapURL) {
+      if (updatedLayout.attachments.heightmapPreviewURL) {
         clearInterval(timer)
         dispatch({
           type: ActionType.HeightmapURLAvailable,

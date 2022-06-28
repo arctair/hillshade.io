@@ -4,5 +4,5 @@ export interface Layout {
 }
 export interface KeyedLayout extends Layout {
   key: string
-  attachments: { heightmapURL: string }
+  attachments: { heightmapURL: string; heightmapPreviewURL: string }
 }
