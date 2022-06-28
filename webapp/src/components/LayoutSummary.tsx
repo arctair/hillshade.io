@@ -24,14 +24,28 @@ export function KeyedLayoutSummary({ layout }: KeyedLayoutSummaryProps) {
     <>
       <div>key: {layout.key}</div>
       <LayoutSummary layout={layout} />
-      {layout.attachments.heightmapURL && (
-        <div>heightmap URL: {layout.attachments.heightmapURL}</div>
-      )}
-      {layout.attachments.heightmapPreviewURL && (
-        <div>
-          heightmap preview URL: {layout.attachments.heightmapPreviewURL}
-        </div>
-      )}
+      <a
+        style={{
+          display: 'block',
+          visibility: layout.attachments.heightmapURL
+            ? 'visible'
+            : 'hidden',
+        }}
+        href={layout.attachments.heightmapURL}
+      >
+        heightmap
+      </a>
+      <a
+        style={{
+          display: 'block',
+          visibility: layout.attachments.heightmapPreviewURL
+            ? 'visible'
+            : 'hidden',
+        }}
+        href={layout.attachments.heightmapPreviewURL}
+      >
+        preview
+      </a>
     </>
   ) : null
 }
