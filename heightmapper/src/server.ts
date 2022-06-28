@@ -12,94 +12,90 @@ const globalElevationFilePath = process.env.GLOBAL_ELEVATION_FILE
 
 console.log('heightmapper version', version)
 
-setInterval(async () => {
-  try {
-    await tick()
-  } catch (e) {
-    console.error(e)
-  }
-}, 1000)
+setInterval(tick, 1000)
 
 async function tick() {
   const response = await nodeFetch('https://api.hillshade.io')
   const { layouts } = (await response.json()) as {
     layouts: KeyedLayout[]
   }
-  for (let {
-    extent: [left, bottom, right, top],
-    heightmapURL,
-    key,
-    size: [width, height],
-  } of layouts) {
-    if (!heightmapURL) {
-      const workspace = `/tmp/heightmapper/${key}`
-      await mkdir(workspace, { recursive: true })
-
-      const warpPath = `${workspace}/heightmap.tif`
-      await new Promise<void>((resolve, reject) => {
-        const process = spawnzsh(
-          `gdalwarp -t_srs EPSG:3857`,
-          `-te ${left} ${bottom} ${right} ${top}`,
-          `-ts ${width} ${height}`,
-          `${globalElevationFilePath} ${warpPath}`,
-        )
-        process.on('exit', (code) =>
-          code === 0 ? resolve() : reject('warp failed'),
-        )
-      })
-
-      const [min, max] = await new Promise<[number, number]>(
-        (resolve, reject) => {
-          const process = spawnzsh(`gdalinfo -mm ${warpPath}`)
-          bufferLines(process.stdout, (line) => {
-            if (line.indexOf('Computed Min/Max') > -1) {
-              const [_, part] = line.split('=')
-              const [min, max] = part.split(',').map((v) => parseFloat(v))
-              resolve([min, max])
-            }
-          })
-          process.on(
-            'exit',
-            (code) => code !== 0 && reject('minmax failed'),
-          )
-        },
-      )
-
-      const translatePath = `${workspace}/heightmap.jpg`
-      await new Promise<void>((resolve, reject) => {
-        const process = spawnzsh(
-          `gdal_translate`,
-          `-scale ${min} ${max} 0 255`,
-          `${warpPath} ${translatePath}`,
-        )
-        process.on('exit', (code) =>
-          code === 0 ? resolve() : reject('translate failed'),
-        )
-      })
-
-      let response = await nodeFetch(`https://api.hillshade.io/images`, {
-        method: 'post',
-        headers: { 'Content-Type': 'image/jpg' },
-        body: createReadStream(translatePath),
-      })
-      const { key: attachmentKey } = await response.json()
-
-      response = await nodeFetch(
-        `https://api.hillshade.io/layouts/${key}`,
-        {
-          method: 'patch',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            heightmapURL: `https://api.hillshade.io/images/${attachmentKey}.jpg`,
-          }),
-        },
-      )
-
-      await rm(workspace, { recursive: true })
+  for (let layout of layouts) {
+    if (!layout.heightmapURL) {
+      const workspace = `/tmp/heightmapper/${layout.key}`
+      try {
+        await mkdir(workspace, { recursive: true })
+        await pipeline(workspace, layout)
+      } catch (e) {
+        console.error('failed to pipeline', layout.key, e)
+      } finally {
+        await rm(workspace, { recursive: true })
+      }
     }
   }
 }
 
+async function pipeline(
+  workspace: string,
+  {
+    extent: [left, bottom, right, top],
+    key,
+    size: [width, height],
+  }: KeyedLayout,
+) {
+  const warpPath = `${workspace}/heightmap.tif`
+  await new Promise<void>((resolve, reject) => {
+    const process = spawnzsh(
+      `gdalwarp -t_srs EPSG:3857`,
+      `-te ${left} ${bottom} ${right} ${top}`,
+      `-ts ${width} ${height}`,
+      `${globalElevationFilePath} ${warpPath}`,
+    )
+    process.on('exit', (code) =>
+      code === 0 ? resolve() : reject('warp failed'),
+    )
+  })
+
+  const [min, max] = await new Promise<[number, number]>(
+    (resolve, reject) => {
+      const process = spawnzsh(`gdalinfo -mm ${warpPath}`)
+      bufferLines(process.stdout, (line) => {
+        if (line.indexOf('Computed Min/Max') > -1) {
+          const [_, part] = line.split('=')
+          const [min, max] = part.split(',').map((v) => parseFloat(v))
+          resolve([min, max])
+        }
+      })
+      process.on('exit', (code) => code !== 0 && reject('minmax failed'))
+    },
+  )
+
+  const translatePath = `${workspace}/heightmap.jpg`
+  await new Promise<void>((resolve, reject) => {
+    const process = spawnzsh(
+      `gdal_translate`,
+      `-scale ${min} ${max} 0 255`,
+      `${warpPath} ${translatePath}`,
+    )
+    process.on('exit', (code) =>
+      code === 0 ? resolve() : reject('translate failed'),
+    )
+  })
+
+  let response = await nodeFetch(`https://api.hillshade.io/images`, {
+    method: 'post',
+    headers: { 'Content-Type': 'image/jpg' },
+    body: createReadStream(translatePath),
+  })
+  const { key: attachmentKey } = await response.json()
+
+  response = await nodeFetch(`https://api.hillshade.io/layouts/${key}`, {
+    method: 'patch',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      heightmapURL: `https://api.hillshade.io/images/${attachmentKey}.jpg`,
+    }),
+  })
+}
 interface KeyedLayout {
   key: string
   size: [number, number]
