@@ -20,11 +20,17 @@ describe('layout router', () => {
   const app = express()
   app.use('/', Router(checker, store))
 
-  test('get layouts - proxy keyed layouts down', async () => {
-    store.getAll.mockReturnValue({ layouts: [] })
+  test('get layouts - proxy keyed layouts down with transformed attachments', async () => {
+    store.getAll.mockReturnValue({
+      layouts: [
+        { some: 'stuff', attachments: new Map([['some', 'attachment']]) },
+      ],
+    })
     const response = await request(app).get('/')
     expect(response.status).toEqual(200)
-    expect(response.body).toEqual({ layouts: [] })
+    expect(response.body).toEqual({
+      layouts: [{ some: 'stuff', attachments: { some: 'attachment' } }],
+    })
   })
 
   describe('create', () => {

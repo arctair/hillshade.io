@@ -13,9 +13,15 @@ export const Router = (
 
   router.use(express.json())
 
-  router.get('/', (_: Request, response: Response) =>
-    response.json(store.getAll()),
-  )
+  router.get('/', (_: Request, response: Response) => {
+    const { layouts } = store.getAll()
+    response.json({
+      layouts: layouts.map((layout) => ({
+        ...layout,
+        attachments: map2obj(layout.attachments),
+      })),
+    })
+  })
 
   router.post('/', (request: Request, response: Response) => {
     const errors = checks.create(request.body)
