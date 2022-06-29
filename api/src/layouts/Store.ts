@@ -11,22 +11,22 @@ export type Store = {
 }
 
 export function Store(): Store {
-  const layouts = new Array<KeyedLayout>()
+  const layouts = new Map<string, KeyedLayout>()
   return {
-    getAll: () => ({ layouts }),
-    get: (key) => {
-      const layout = layouts.find((layout) => layout.key === key)
-      return layout ? [layout, undefined] : [undefined, errKeyNotFound]
-    },
+    getAll: () => ({ layouts: Array.from(layouts.values()) }),
+    get: (key) =>
+      layouts.has(key)
+        ? [layouts.get(key), undefined]
+        : [undefined, errKeyNotFound],
     create: (layout) => {
       const key = uuidv4()
       const keyedLayout = { ...layout, key, attachments: new Map() }
-      layouts.push(keyedLayout)
+      layouts.set(key, keyedLayout)
       return keyedLayout
     },
     patch: (key, patch) => {
-      const layout = layouts.find((v) => v.key === key)
-      if (layout) {
+      if (layouts.has(key)) {
+        const layout = layouts.get(key)!
         if (patch.heightmapURL) layout.heightmapURL = patch.heightmapURL
         patch.attachments?.forEach((value, key) =>
           layout.attachments.set(key, value),
