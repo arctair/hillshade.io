@@ -5,6 +5,7 @@ export const errKeyNotFound = 'This key is not present'
 
 export type Store = {
   getAll: () => { layouts: KeyedLayout[] }
+  get: (key: string) => [KeyedLayout?, string?]
   create: (layout: Layout) => KeyedLayout
   patch: (id: string, patch: LayoutPatch) => [KeyedLayout?, string?]
 }
@@ -13,6 +14,10 @@ export function Store(): Store {
   const layouts = new Array<KeyedLayout>()
   return {
     getAll: () => ({ layouts }),
+    get: (key) => {
+      const layout = layouts.find((layout) => layout.key === key)
+      return layout ? [layout, undefined] : [undefined, errKeyNotFound]
+    },
     create: (layout) => {
       const key = uuidv4()
       const keyedLayout = { ...layout, key, attachments: new Map() }

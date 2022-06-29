@@ -23,6 +23,21 @@ export const Router = (
     })
   })
 
+  router.get('/layouts/:key', (request: Request, response: Response) => {
+    const [layout, error] = store.get(request.params['key'])
+    switch (error) {
+      case undefined:
+        return response.json({
+          ...layout,
+          attachments: map2obj(layout!.attachments),
+        })
+      case errKeyNotFound:
+        return response.status(404).json({ error })
+      default:
+        return response.status(500).json({ error })
+    }
+  })
+
   router.post('/', (request: Request, response: Response) => {
     const errors = checks.create(request.body)
     if (errors.length > 0) {

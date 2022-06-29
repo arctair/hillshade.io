@@ -11,6 +11,7 @@ describe('layout router', () => {
 
   const store = {
     getAll: jest.fn(),
+    get: jest.fn(),
     create: jest.fn(),
     patch: jest.fn(),
   }
@@ -30,6 +31,39 @@ describe('layout router', () => {
     expect(response.status).toEqual(200)
     expect(response.body).toEqual({
       layouts: [{ some: 'stuff', attachments: { some: 'attachment' } }],
+    })
+  })
+
+  describe('get layout by key', () => {
+    test('proxy key up and proxy layout down with attachments transformed', async () => {
+      store.get.mockReturnValue([
+        {
+          the: 'layout yay',
+          attachments: new Map([['some', 'attachment']]),
+        },
+        undefined,
+      ])
+      const response = await request(app).get('/layouts/somekey')
+      expect(response.status).toEqual(200)
+      expect(response.body).toEqual({
+        the: 'layout yay',
+        attachments: { some: 'attachment' },
+      })
+      expect(store.get).toHaveBeenCalledWith('somekey')
+    })
+    test('proxy key up and proxy key not found error down with not found status code', async () => {
+      store.get.mockReturnValue([undefined, errKeyNotFound])
+      const response = await request(app).get('/layouts/anotherkey')
+      expect(response.status).toEqual(404)
+      expect(response.body).toEqual({ error: errKeyNotFound })
+      expect(store.get).toHaveBeenCalledWith('anotherkey')
+    })
+    test('proxy key up and proxy error down with default server error status code', async () => {
+      store.get.mockReturnValue([undefined, 'some error'])
+      const response = await request(app).get('/layouts/boomkey')
+      expect(response.status).toEqual(500)
+      expect(response.body).toEqual({ error: 'some error' })
+      expect(store.get).toHaveBeenCalledWith('boomkey')
     })
   })
 
