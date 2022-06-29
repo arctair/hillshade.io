@@ -1,7 +1,4 @@
-import { useRemoteLayoutState } from './RemoteLayoutState'
-import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
 import { KeyedLayout, Layout } from './types'
-import { selectLayout, useViewState } from './ViewState'
 
 interface LayoutSummaryProps {
   layout: Layout
