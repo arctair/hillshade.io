@@ -2,8 +2,8 @@ import { spawn } from 'child_process'
 import { createReadStream, mkdir as mkdirSync, rm as rmSync } from 'fs'
 import nodeFetch from 'node-fetch'
 import { Readable } from 'stream'
-import { buffer } from 'stream/consumers'
 import { promisify } from 'util'
+import { v4 as uuid } from 'uuid'
 
 const mkdir = promisify(mkdirSync)
 const rm = promisify(rmSync)
@@ -23,7 +23,7 @@ async function tick() {
     }
     for (let layout of layouts) {
       if (!layout.attachments.heightmapURL) {
-        const workspace = `/tmp/heightmapper/${layout.key}`
+        const workspace = `/tmp/heightmapper/${uuid()}`
         try {
           await mkdir(workspace, { recursive: true })
           await pipeline(workspace, layout)
