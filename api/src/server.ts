@@ -16,6 +16,7 @@ import {
   checkPresent as CheckHeightmapURLPresent,
 } from './layouts/checks/HeightmapURL'
 import { create as CheckAll } from './layouts/checks'
+import { check as CheckWorldScreenResolution } from './layouts/checks/WorldScreenResolution'
 
 const version = process.env.VERSION || 'dev'
 const port = process.env.PORT || 8080
@@ -26,6 +27,7 @@ const app = App(
       create: CheckAll(
         CheckExtent,
         CheckSize,
+        CheckWorldScreenResolution,
         CheckHeightmapURLNotPresent,
         CheckAttachmentsNotPresent,
       ),
