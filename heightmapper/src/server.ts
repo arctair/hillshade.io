@@ -9,7 +9,17 @@ const mkdir = promisify(mkdirSync)
 const rm = promisify(rmSync)
 
 const version = process.env.VERSION || 'dev'
-const globalElevationFilePath = process.env.GLOBAL_ELEVATION_FILE
+const globalElevationOptions = [
+  {
+    path: process.env.GLOBAL_ELEVATION_FILE_1,
+    minimumWorldScreenResolution: 20026376.39 / 180 / 3612,
+  },
+  {
+    path: process.env.GLOBAL_ELEVATION_FILE_13,
+    minimumWorldScreenResolution: 0,
+    // minimumWorldScreenResolution: 20026376.39 / 180 / 10812,
+  },
+]
 
 console.log('heightmapper version', version)
 
@@ -47,6 +57,14 @@ async function pipeline(
     size: [width, height],
   }: KeyedLayout,
 ) {
+  const worldScreenResolution = Math.min(
+    (right - left) / width,
+    (top - bottom) / height,
+  )
+  const globalElevationFilePath = globalElevationOptions.find(
+    (option) =>
+      worldScreenResolution > option.minimumWorldScreenResolution,
+  )!.path
   const warpPath = `${workspace}/warp.tif`
   await new Promise<void>((resolve, reject) => {
     const process = spawnzsh(

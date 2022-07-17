@@ -2,7 +2,8 @@
 Description=heightmapper.hillshade.io
 
 [Service]
-Environment=GLOBAL_ELEVATION_FILE=/home/arctair/faster/usgs-3dep-1.vrt
+Environment=GLOBAL_ELEVATION_FILE_1=/home/arctair/faster/usgs-3dep-1.vrt
+Environment=GLOBAL_ELEVATION_FILE_13=/home/arctair/faster/usgs-3dep-13.vrt
 ExecStart=/home/arctair/hillshade.io/heightmapper/scripts/execstart
 Type=simple
 WorkingDirectory=/home/arctair/hillshade.io/heightmapper
