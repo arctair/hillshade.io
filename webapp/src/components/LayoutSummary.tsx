@@ -5,14 +5,14 @@ interface LayoutSummaryProps {
 }
 export function LayoutSummary({ layout }: LayoutSummaryProps) {
   const extent = layout.extent.map((v) => v.toFixed(0)).join(' ')
+  const size = layout.size.join('x')
   const worldScreenResolution = selectWorldScreenResolution(layout)
     .map((v) => v.toFixed(2))
     .join('x')
   return (
     <>
-      <div>width: {layout.size[0]}</div>
-      <div>height: {layout.size[1]}</div>
       <div>extent: [ {extent} ] (EPSG:3857)</div>
+      <div>size: {size}</div>
       <div>
         world screen resolution: {worldScreenResolution} meters/pixel
       </div>
