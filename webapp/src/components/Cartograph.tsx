@@ -1,7 +1,7 @@
 import BaseMap from './BaseMap'
-import MapControls from './MapControls'
 import { useRemoteLayoutState } from './RemoteLayoutState'
 import { useViewState } from './ViewState'
+import ViewStateControls from './ViewStateControls'
 
 export default function Cartograph() {
   const [{ layout }] = useRemoteLayoutState()
@@ -36,7 +36,7 @@ export default function Cartograph() {
           height: '100%',
         }}
       >
-        <MapControls onEvent={dispatch} />
+        <ViewStateControls onEvent={dispatch} />
       </div>
     </div>
   )

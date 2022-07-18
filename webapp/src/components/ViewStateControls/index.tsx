@@ -4,7 +4,7 @@ import {
   createPanAction,
   createResizeAction,
   createZoomAction,
-} from './ViewState/actions'
+} from '../ViewState/actions'
 import ZoomButtons from './ZoomButtons'
 
 type MapControlsProps = {
