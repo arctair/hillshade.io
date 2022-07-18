@@ -11,7 +11,6 @@ import TileShaderProgram, {
 const mat4 = require('gl-mat4')
 
 export default function BaseMap() {
-  const ref = useRef() as MutableRefObject<HTMLDivElement>
   const canvasRef = useRef() as MutableRefObject<HTMLCanvasElement>
   const contextRef = useRef<TileShaderProgramContext>({
     modelViewMatrix: mat4.create(),
@@ -98,7 +97,7 @@ export default function BaseMap() {
   }, [])
 
   return (
-    <div style={{ height: '100%', position: 'relative' }} ref={ref}>
+    <div style={{ height: '100%', position: 'relative' }}>
       <canvas
         style={{
           position: 'absolute',
