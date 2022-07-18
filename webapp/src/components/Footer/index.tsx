@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import Versions from './Versions'
 
-import './Footer.css'
+import './index.css'
 
 const gray = 'hsl(120, 10%, 30%)'
 const light = 'hsl(120, 5%, 75%)'
