@@ -1,17 +1,17 @@
 import React, { useContext, useReducer } from 'react'
-import { KeyedLayout, Layout } from '../types'
+import { KeyedLayout } from '../types'
 import ViewState, { useViewState } from '../ViewState'
 import { selectLayout } from '../ViewState/selectors'
 import { TILE_TO_EPSG_3857, transformExtent } from '../transformations'
-
-type Action = CreateStart | CreateSuccess | CreateFailure | Forget
-enum ActionType {
+import {
+  ActionType,
+  Action,
+  CreateFailure,
   CreateStart,
   CreateSuccess,
-  CreateFailure,
   Forget,
   HeightmapURLAvailable,
-}
+} from './actions'
 
 const defaultState = { errors: [], layout: undefined }
 interface State {
@@ -143,35 +143,4 @@ async function createLayout(
       timer,
     })
   }
-}
-
-interface CreateStartProps {
-  layout: Layout
-}
-interface CreateStart extends CreateStartProps {
-  type: ActionType
-}
-interface CreateSuccessProps {
-  layout: KeyedLayout
-  timer: NodeJS.Timer
-}
-interface CreateSuccess extends CreateSuccessProps {
-  type: ActionType
-}
-interface CreateFailureProps {
-  errors: string[]
-}
-interface CreateFailure extends CreateFailureProps {
-  type: ActionType
-}
-
-interface Forget {
-  type: ActionType
-}
-
-interface HeightmapURLAvailableProps {
-  layout: KeyedLayout
-}
-interface HeightmapURLAvailable extends HeightmapURLAvailableProps {
-  type: ActionType
 }
