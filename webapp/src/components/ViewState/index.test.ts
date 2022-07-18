@@ -1,12 +1,14 @@
 import ViewState, {
-  createPanAction,
-  createResizeAction,
-  createZoomAction,
   selectGLExtent1D,
   selectLayout,
   selectTileExtent1D,
   viewStateReducer,
 } from '.'
+import {
+  createPanAction,
+  createResizeAction,
+  createZoomAction,
+} from './actions'
 
 describe('pan', () => {
   test('when zoom is zero', () => {

@@ -1,10 +1,10 @@
 import { MutableRefObject, useEffect, useRef } from 'react'
 import {
+  Action as ViewStateAction,
   createPanAction,
   createResizeAction,
   createZoomAction,
-  ViewStateAction,
-} from './ViewState'
+} from './ViewState/actions'
 import ZoomButtons from './ZoomButtons'
 
 type MapControlsProps = {

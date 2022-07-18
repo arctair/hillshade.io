@@ -1,5 +1,12 @@
 import React, { useContext, useReducer } from 'react'
 import { Layout } from '../types'
+import {
+  Action,
+  ActionType,
+  PanAction,
+  ResizeAction,
+  ZoomAction,
+} from './actions'
 
 export default interface ViewState {
   mapSize: [number, number]
@@ -13,56 +20,9 @@ export const defaultViewState: ViewState = {
   zoom: 11,
 }
 
-export type ViewStateAction = PanAction | ResizeAction | ZoomAction
-
-enum ActionType {
-  Pan,
-  Resize,
-  Zoom,
-}
-
-type PanActionProps = {
-  deltaXY: [number, number]
-}
-
-interface PanAction extends PanActionProps {
-  type: ActionType
-}
-
-export function createPanAction(props: PanActionProps): PanAction {
-  return { ...props, type: ActionType.Pan }
-}
-
-type ResizeActionProps = {
-  mapSize: [number, number]
-}
-
-interface ResizeAction extends ResizeActionProps {
-  type: ActionType
-}
-
-export function createResizeAction(
-  props: ResizeActionProps,
-): ResizeAction {
-  return { ...props, type: ActionType.Resize }
-}
-
-type ZoomActionProps = {
-  deltaZ: number
-  pointerXY: [number, number]
-}
-
-interface ZoomAction extends ZoomActionProps {
-  type: ActionType
-}
-
-export function createZoomAction(props: ZoomActionProps): ZoomAction {
-  return { ...props, type: ActionType.Zoom }
-}
-
 export function viewStateReducer(
   state: ViewState,
-  action: ViewStateAction,
+  action: Action,
 ): ViewState {
   switch (action.type) {
     case ActionType.Pan:
@@ -186,9 +146,10 @@ export function selectLayout({
   }
 }
 
-const context = React.createContext<
-  [ViewState, React.Dispatch<ViewStateAction>]
->([defaultViewState, (_: ViewStateAction) => {}])
+const context = React.createContext<[ViewState, React.Dispatch<Action>]>([
+  defaultViewState,
+  (_: Action) => {},
+])
 
 type ProviderProps = { children: React.ReactNode }
 export function Provider({ children }: ProviderProps) {
