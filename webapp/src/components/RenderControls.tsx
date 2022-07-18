@@ -1,6 +1,7 @@
 import { useRemoteLayoutState } from './RemoteLayoutState'
 import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
-import { selectLayout, useViewState } from './ViewState'
+import { useViewState } from './ViewState'
+import { selectLayout } from './ViewState/selectors'
 import { LayoutSummary, KeyedLayoutSummary } from './LayoutSummary'
 import { selectWorldScreenResolution } from './types'
 

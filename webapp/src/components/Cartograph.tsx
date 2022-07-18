@@ -1,11 +1,11 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
 import MapControls from './MapControls'
 import { useRemoteLayoutState } from './RemoteLayoutState'
+import { useViewState } from './ViewState'
 import {
   selectGLExtent2D,
   selectTileExtent2D,
-  useViewState,
-} from './ViewState'
+} from './ViewState/selectors'
 import TileShaderProgram, {
   Context as TileShaderProgramContext,
 } from './TileShaderProgram'

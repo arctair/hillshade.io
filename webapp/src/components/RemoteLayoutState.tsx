@@ -1,6 +1,7 @@
 import React, { useContext, useReducer } from 'react'
 import { KeyedLayout, Layout } from './types'
-import ViewState, { selectLayout, useViewState } from './ViewState'
+import ViewState, { useViewState } from './ViewState'
+import { selectLayout } from './ViewState/selectors'
 import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
 
 type Action = CreateStart | CreateSuccess | CreateFailure | Forget
