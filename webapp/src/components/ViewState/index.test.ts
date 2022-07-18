@@ -6,7 +6,7 @@ import ViewState, {
   selectLayout,
   selectTileExtent1D,
   viewStateReducer,
-} from './ViewState'
+} from '.'
 
 describe('pan', () => {
   test('when zoom is zero', () => {

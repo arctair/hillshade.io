@@ -1,5 +1,5 @@
 import React, { useContext, useReducer } from 'react'
-import { Layout } from './types'
+import { Layout } from '../types'
 
 export default interface ViewState {
   mapSize: [number, number]
