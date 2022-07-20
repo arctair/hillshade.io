@@ -1,4 +1,5 @@
 import BaseMap from './BaseMap'
+import ExtentBox from './ExtentBox'
 import { useRemoteLayoutState } from './RemoteLayoutState'
 import { useViewState } from './ViewState'
 import ViewStateControls from './ViewStateControls'
@@ -11,33 +12,34 @@ export default function Cartograph() {
 
   return (
     <div style={{ height: '100%', position: 'relative' }}>
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      <Layer>
         <BaseMap />
-      </div>
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      </Layer>
+      <Layer>
         <img src={heightmapURL} alt="" />
-      </div>
-      <div
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}
-      >
+      </Layer>
+      <Layer>
+        <ExtentBox />
+      </Layer>
+      <Layer>
         <ViewStateControls onEvent={dispatch} />
-      </div>
+      </Layer>
     </div>
+  )
+}
+
+interface LayerProps {
+  children: React.ReactNode
+}
+function Layer({ children }: LayerProps) {
+  return (
+    <div
+      children={children}
+      style={{
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+      }}
+    />
   )
 }
