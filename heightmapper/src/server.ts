@@ -28,6 +28,10 @@ setInterval(tick, 1000)
 async function tick() {
   try {
     const response = await nodeFetch('https://api.hillshade.io')
+    if (response.status !== 200)
+      throw Error(
+        `failed to get layouts (status code: ${response.status} ${response.statusText})`,
+      )
     const { layouts } = (await response.json()) as {
       layouts: KeyedLayout[]
     }
