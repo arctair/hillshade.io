@@ -1,5 +1,5 @@
 import { MutableRefObject, useEffect, useRef, useState } from 'react'
-import { useViewState } from '../ViewState'
+import { useMapSize, useViewState } from '../ViewState'
 import {
   selectGLExtent2D,
   selectTileExtent2D,
@@ -67,13 +67,7 @@ export default function BaseMap() {
     }
   }, [viewState])
 
-  useEffect(() => {
-    const canvas = canvasRef.current
-    const [width, height] = viewState.mapSize
-    canvas
-      .getContext('webgl')
-      ?.viewport(0, 0, (canvas.width = width), (canvas.height = height))
-  }, [viewState.mapSize])
+  useMapSize(canvasRef)
 
   useEffect(() => {
     const context = contextRef.current

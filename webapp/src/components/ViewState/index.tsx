@@ -1,4 +1,5 @@
-import React, { useContext, useReducer } from 'react'
+import React, { useContext, useEffect, useReducer } from 'react'
+
 import {
   Action,
   ActionType,
@@ -89,4 +90,15 @@ export function Provider({ children }: ProviderProps) {
 
 export function useViewState() {
   return useContext(context)
+}
+
+export function useMapSize(ref: React.RefObject<HTMLCanvasElement>) {
+  const [viewState] = useViewState()
+  useEffect(() => {
+    const canvas = ref.current!
+    const [width, height] = viewState.mapSize
+    canvas
+      .getContext('webgl')
+      ?.viewport(0, 0, (canvas.width = width), (canvas.height = height))
+  }, [ref, viewState.mapSize])
 }
