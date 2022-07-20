@@ -1,3 +1,5 @@
+import { createProgram, createShader } from '../shaders'
+
 export interface Context {
   modelViewMatrix: any
   projectionMatrix: any
@@ -74,16 +76,7 @@ export default class ShaderProgram {
         }`,
     )
 
-    const program = gl.createProgram()!
-    gl.attachShader(program, vertexShader)
-    gl.attachShader(program, fragmentShader)
-    gl.linkProgram(program)
-
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      const programInfoLog = gl.getProgramInfoLog(program)
-      const message = `Unable to initialize the shader program: ${programInfoLog}`
-      throw Error(message)
-    }
+    const program = createProgram(gl, vertexShader, fragmentShader)
 
     const aVertexPositionLocation = gl.getAttribLocation(
       program,
@@ -245,25 +238,6 @@ export default class ShaderProgram {
       gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, i * 12)
     })
   }
-}
-
-function createShader(
-  gl: WebGLRenderingContext,
-  type: GLenum,
-  shaderSource: string,
-) {
-  const shader = gl.createShader(type)!
-  gl.shaderSource(shader, shaderSource)
-  gl.compileShader(shader)
-
-  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-    const shaderInfoLog = gl.getShaderInfoLog(shader)
-    const message = `An error occurred compiling the shaders: ${shaderInfoLog}`
-    gl.deleteShader(shader)
-    throw Error(message)
-  }
-
-  return shader
 }
 
 function loadTexture(gl: WebGLRenderingContext, url: string) {
