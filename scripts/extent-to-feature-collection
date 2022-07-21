@@ -1,0 +1,23 @@
+#!/bin/zsh
+left=$1
+bottom=$2
+right=$3
+top=$4
+if [ -z "$left" ] || [ -z "$bottom" ] || [ -z "$right" ] || [ -z "$top" ] ; then
+  echo usage: $0 left bottom right top
+  exit 1
+fi
+
+coordinates="`jq -n \
+  --argjson left "$left" \
+  --argjson bottom "$bottom" \
+  --argjson right "$right" \
+  --argjson top "$top" \
+  '[[[$left,$top],[$left,$bottom],[$right,$bottom],[$right,$top],[$left,$top]]]'`"
+
+crs="`jq -n '{type:"name",properties:{name:"urn:ogc:def:crs:EPSG::3857"}}'`"
+
+jq -n \
+  --argjson coordinates "$coordinates" \
+  --argjson crs "$crs" \
+  '{type:"FeatureCollection",crs:$crs,features:[{type:"Feature",fid:1,id:1,geometry:{type:"Polygon",coordinates:$coordinates}}],name:"extent"}'
