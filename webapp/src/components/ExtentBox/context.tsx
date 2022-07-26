@@ -1,7 +1,11 @@
-import { createContext, useReducer } from 'react'
+import { createContext, useContext, useReducer } from 'react'
 import { State } from './types'
 
-const defaultState = { dragging: false, rectangle: [0, 0, 0, 0] } as State
+const defaultState = {
+  dragging: false,
+  startSelect: false,
+  rectangle: [0, 0, 0, 0],
+} as State
 
 export const context = createContext([
   defaultState,
@@ -20,9 +24,15 @@ export function Provider({ children }: ProviderProps) {
 
 function reducer(state: State, { event, rect, type }: any): State {
   if (type === 'onPointerDown') {
-    const x = event.clientX - rect.x
-    const y = event.clientY - rect.y
-    return { dragging: true, rectangle: [x, y, x, y] }
+    if (state.startSelect) {
+      const x = event.clientX - rect.x
+      const y = event.clientY - rect.y
+      return {
+        dragging: true,
+        startSelect: false,
+        rectangle: [x, y, x, y],
+      }
+    } else return state
   } else if (type === 'onPointerMove') {
     const {
       dragging,
@@ -35,5 +45,12 @@ function reducer(state: State, { event, rect, type }: any): State {
     } else return state
   } else if (type === 'onPointerUp') {
     return { ...state, dragging: false }
+  } else if (type === 'startSelect') {
+    return { ...state, startSelect: true }
   } else throw Error(`irreducible action type: ${type}`)
+}
+
+export function useExtentBox() {
+  const dispatch = useContext(context)[1]
+  return { startSelect: () => dispatch({ type: 'startSelect' }) }
 }

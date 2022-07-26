@@ -4,6 +4,7 @@ import { useViewState } from './ViewState'
 import { selectLayout } from './ViewState/selectors'
 import { LayoutSummary, KeyedLayoutSummary } from './LayoutSummary'
 import { selectWorldScreenResolution } from './types'
+import { useExtentBox } from './ExtentBox/context'
 
 export default function RenderControls() {
   const [viewState] = useViewState()
@@ -11,6 +12,7 @@ export default function RenderControls() {
     { errors, layout: remoteLayout },
     { createLayout, forgetLayout },
   ] = useRemoteLayoutState()
+  const { startSelect } = useExtentBox()
   const layout = selectLayout(viewState)
   layout.extent = transformExtent(layout.extent, TILE_TO_EPSG_3857)
   const isWorldScreenResolutionTooBig = selectWorldScreenResolution(
@@ -22,6 +24,7 @@ export default function RenderControls() {
   return (
     <>
       <div style={{ fontWeight: 'bold' }}>layout</div>
+      <button onClick={startSelect}>select extent</button>
       <LayoutSummary layout={layout} />
       <div style={{ fontWeight: 'bold' }}>
         remote layout&nbsp;
