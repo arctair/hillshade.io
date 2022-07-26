@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer } from 'react'
+import ViewState from '../ViewState'
 import { Action, PointerDownProps, PointerMoveProps, State } from './types'
 
 const defaultState = {
@@ -26,9 +27,11 @@ function reducer(state: State, action: Action): State {
   switch (action.type) {
     case 'pointerDown': {
       if (!state.startSelect) return state
-      const { event, rect } = action
-      const x = event.clientX - rect.x
-      const y = event.clientY - rect.y
+      const { event, rect, viewState } = action
+      const [x, y] = selectOffsetFromScreen(viewState, [
+        event.clientX - rect.x,
+        event.clientY - rect.y,
+      ])
       return {
         dragging: true,
         rectangle: [x, y, x, y],
@@ -38,9 +41,11 @@ function reducer(state: State, action: Action): State {
     case 'pointerMove': {
       if (!state.dragging) return state
       const [x0, y0] = state.rectangle
-      const { event, rect } = action
-      const x = event.clientX - rect.x
-      const y = event.clientY - rect.y
+      const { event, rect, viewState } = action
+      const [x, y] = selectOffsetFromScreen(viewState, [
+        event.clientX - rect.x,
+        event.clientY - rect.y,
+      ])
       return { ...state, rectangle: [x0, y0, x, y] }
     }
     case 'pointerUp':
@@ -48,6 +53,14 @@ function reducer(state: State, action: Action): State {
     case 'startSelect':
       return { ...state, startSelect: true }
   }
+}
+
+function selectOffsetFromScreen(
+  { offset: [ox, oy], zoom }: ViewState,
+  [sx, sy]: [number, number],
+): [number, number] {
+  const scale = Math.pow(2, zoom)
+  return [ox + sx / 256 / scale, oy + sy / 256 / scale]
 }
 
 export function useExtentBox(): [State, ExtentBoxDispatchers] {

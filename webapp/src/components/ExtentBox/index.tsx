@@ -1,10 +1,12 @@
 import { MutableRefObject, useRef } from 'react'
+import ViewState, { useViewState } from '../ViewState'
 import { useExtentBox } from './context'
 import { State } from './types'
 
 export default function ExtentBox() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
   const [state, { pointerDown, pointerMove, pointerUp }] = useExtentBox()
+  const [viewState] = useViewState()
 
   return (
     <div
@@ -12,24 +14,27 @@ export default function ExtentBox() {
       style={{
         height: '100%',
         position: 'relative',
+        overflow: 'hidden',
       }}
       onPointerDown={(event) =>
         pointerDown({
           event,
           rect: ref.current.getBoundingClientRect(),
+          viewState,
         })
       }
       onPointerMove={(event) =>
         pointerMove({
           event,
           rect: ref.current.getBoundingClientRect(),
+          viewState,
         })
       }
       onPointerUp={pointerUp}
     >
       <div
         style={{
-          ...selectStyle(state),
+          ...selectStyle(state, viewState),
           border: '1px solid red',
           position: 'absolute',
         }}
@@ -38,11 +43,15 @@ export default function ExtentBox() {
   )
 }
 
-const selectStyle = ({ rectangle: [x0, y0, x1, y1] }: State) => {
-  const left = Math.min(x0, x1)
-  const top = Math.min(y0, y1)
-  const right = Math.max(x0, x1)
-  const bottom = Math.max(y0, y1)
+const selectStyle = (
+  { rectangle: [x0, y0, x1, y1] }: State,
+  { offset: [x, y], zoom }: ViewState,
+) => {
+  const scale = Math.pow(2, zoom)
+  const left = (Math.min(x0, x1) - x) * 256 * scale
+  const top = (Math.min(y0, y1) - y) * 256 * scale
+  const right = (Math.max(x0, x1) - x) * 256 * scale
+  const bottom = (Math.max(y0, y1) - y) * 256 * scale
   return {
     left: px(left),
     top: px(top),

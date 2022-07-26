@@ -1,3 +1,5 @@
+import ViewState from '../ViewState'
+
 export type State = {
   dragging: boolean
   startSelect: boolean
@@ -13,6 +15,7 @@ export type Action =
 export interface PointerDownProps {
   event: React.PointerEvent
   rect: DOMRect
+  viewState: ViewState
 }
 
 interface PointerDownAction extends PointerDownProps {
@@ -22,6 +25,7 @@ interface PointerDownAction extends PointerDownProps {
 export interface PointerMoveProps {
   event: React.PointerEvent
   rect: DOMRect
+  viewState: ViewState
 }
 
 interface PointerMoveAction extends PointerMoveProps {
