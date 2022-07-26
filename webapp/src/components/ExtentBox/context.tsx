@@ -12,7 +12,7 @@ export const context = createContext([
   (_: any) => {
     throw Error(`no extent box provider in component tree`)
   },
-] as [State, React.Dispatch<any>])
+] as [State, React.Dispatch<Action>])
 
 interface ProviderProps {
   children: React.ReactNode
@@ -22,11 +22,16 @@ export function Provider({ children }: ProviderProps) {
   return <context.Provider value={value} children={children} />
 }
 
-function reducer(state: State, { event, rect, type }: any): State {
+interface Action {
+  event?: React.PointerEvent<any>
+  rect?: DOMRect
+  type: string
+}
+function reducer(state: State, { event, rect, type }: Action): State {
   if (type === 'onPointerDown') {
     if (state.startSelect) {
-      const x = event.clientX - rect.x
-      const y = event.clientY - rect.y
+      const x = event!.clientX - rect!.x
+      const y = event!.clientY - rect!.y
       return {
         dragging: true,
         rectangle: [x, y, x, y],
@@ -39,8 +44,8 @@ function reducer(state: State, { event, rect, type }: any): State {
       rectangle: [x0, y0],
     } = state
     if (dragging) {
-      const x = event.clientX - rect.x
-      const y = event.clientY - rect.y
+      const x = event!.clientX - rect!.x
+      const y = event!.clientY - rect!.y
       return { ...state, rectangle: [x0, y0, x, y] }
     } else return state
   } else if (type === 'onPointerUp') {
