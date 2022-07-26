@@ -10,7 +10,7 @@ const defaultState = {
 
 export const context = createContext([
   defaultState,
-  (_: any) => {
+  (_: Action) => {
     throw Error(`no extent box provider in component tree`)
   },
 ] as [State, React.Dispatch<Action>])
@@ -24,33 +24,31 @@ export function Provider({ children }: ProviderProps) {
 }
 
 function reducer(state: State, action: Action): State {
-  if (action.type === 'pointerDown') {
-    if (state.startSelect) {
+  switch (action.type) {
+    case 'pointerDown': {
+      if (!state.startSelect) return state
       const { event, rect } = action
-      const x = event!.clientX - rect!.x
-      const y = event!.clientY - rect!.y
+      const x = event.clientX - rect.x
+      const y = event.clientY - rect.y
       return {
         dragging: true,
         rectangle: [x, y, x, y],
         startSelect: false,
       }
-    } else return state
-  } else if (action.type === 'pointerMove') {
-    const {
-      dragging,
-      rectangle: [x0, y0],
-    } = state
-    if (dragging) {
+    }
+    case 'pointerMove': {
+      if (!state.dragging) return state
+      const [x0, y0] = state.rectangle
       const { event, rect } = action
-      const x = event!.clientX - rect!.x
-      const y = event!.clientY - rect!.y
+      const x = event.clientX - rect.x
+      const y = event.clientY - rect.y
       return { ...state, rectangle: [x0, y0, x, y] }
-    } else return state
-  } else if (action.type === 'pointerUp') {
-    return { ...state, dragging: false }
-  } else if (action.type === 'startSelect') {
-    return { ...state, startSelect: true }
-  } else throw Error(`irreducible action type`)
+    }
+    case 'pointerUp':
+      return { ...state, dragging: false }
+    case 'startSelect':
+      return { ...state, startSelect: true }
+  }
 }
 
 export function useExtentBox() {
