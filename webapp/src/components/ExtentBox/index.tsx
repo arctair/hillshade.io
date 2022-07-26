@@ -1,10 +1,10 @@
-import { MutableRefObject, useContext, useRef } from 'react'
-import { context } from './context'
+import { MutableRefObject, useRef } from 'react'
+import { useExtentBox } from './context'
 import { State } from './types'
 
 export default function ExtentBox() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
-  const [state, dispatch] = useContext(context)
+  const [state, { pointerDown, pointerMove, pointerUp }] = useExtentBox()
 
   return (
     <div
@@ -14,20 +14,18 @@ export default function ExtentBox() {
         position: 'relative',
       }}
       onPointerDown={(event) =>
-        dispatch({
+        pointerDown({
           event,
           rect: ref.current.getBoundingClientRect(),
-          type: 'pointerDown',
         })
       }
       onPointerMove={(event) =>
-        dispatch({
+        pointerMove({
           event,
           rect: ref.current.getBoundingClientRect(),
-          type: 'pointerMove',
         })
       }
-      onPointerUp={() => dispatch({ type: 'pointerUp' })}
+      onPointerUp={pointerUp}
     >
       <div
         style={{

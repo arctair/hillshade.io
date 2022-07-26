@@ -51,14 +51,30 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export function useExtentBox() {
+export function useExtentBox(): [State, ExtentBoxDispatchers] {
   const [state, dispatch] = useContext(context)
   return [
     state,
-    { startSelect: () => dispatch({ type: 'startSelect' }) },
-  ] as [State, ExtentBoxDispatchers]
+    {
+      pointerDown: ({ event, rect }) =>
+        dispatch({ event, rect, type: 'pointerDown' }),
+      pointerMove: ({ event, rect }) =>
+        dispatch({ event, rect, type: 'pointerMove' }),
+      pointerUp: () => dispatch({ type: 'pointerUp' }),
+      startSelect: () => dispatch({ type: 'startSelect' }),
+    },
+  ]
 }
 
 interface ExtentBoxDispatchers {
+  pointerDown: (action: {
+    event: React.PointerEvent
+    rect: DOMRect
+  }) => void
+  pointerMove: (action: {
+    event: React.PointerEvent
+    rect: DOMRect
+  }) => void
+  pointerUp: () => void
   startSelect: () => void
 }
