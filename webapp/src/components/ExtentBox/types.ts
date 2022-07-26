@@ -10,16 +10,22 @@ export type Action =
   | PointerUpAction
   | StartSelectAction
 
-interface PointerDownAction {
-  type: 'pointerDown'
-  event: React.PointerEvent<any>
+export interface PointerDownProps {
+  event: React.PointerEvent
   rect: DOMRect
 }
 
-interface PointerMoveAction {
-  type: 'pointerMove'
-  event: React.PointerEvent<any>
+interface PointerDownAction extends PointerDownProps {
+  type: 'pointerDown'
+}
+
+export interface PointerMoveProps {
+  event: React.PointerEvent
   rect: DOMRect
+}
+
+interface PointerMoveAction extends PointerMoveProps {
+  type: 'pointerMove'
 }
 
 interface PointerUpAction {

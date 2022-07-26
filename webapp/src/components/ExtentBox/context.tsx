@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer } from 'react'
-import { Action, State } from './types'
+import { Action, PointerDownProps, PointerMoveProps, State } from './types'
 
 const defaultState = {
   dragging: false,
@@ -55,10 +55,8 @@ export function useExtentBox(): [State, ExtentBoxDispatchers] {
   return [
     state,
     {
-      pointerDown: ({ event, rect }) =>
-        dispatch({ event, rect, type: 'pointerDown' }),
-      pointerMove: ({ event, rect }) =>
-        dispatch({ event, rect, type: 'pointerMove' }),
+      pointerDown: (props) => dispatch({ ...props, type: 'pointerDown' }),
+      pointerMove: (props) => dispatch({ ...props, type: 'pointerMove' }),
       pointerUp: () => dispatch({ type: 'pointerUp' }),
       startSelect: () => dispatch({ type: 'startSelect' }),
     },
@@ -66,14 +64,8 @@ export function useExtentBox(): [State, ExtentBoxDispatchers] {
 }
 
 interface ExtentBoxDispatchers {
-  pointerDown: (action: {
-    event: React.PointerEvent
-    rect: DOMRect
-  }) => void
-  pointerMove: (action: {
-    event: React.PointerEvent
-    rect: DOMRect
-  }) => void
+  pointerDown: (_: PointerDownProps) => void
+  pointerMove: (_: PointerMoveProps) => void
   pointerUp: () => void
   startSelect: () => void
 }
