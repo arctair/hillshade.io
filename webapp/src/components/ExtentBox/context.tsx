@@ -56,5 +56,9 @@ export function useExtentBox() {
   return [
     state,
     { startSelect: () => dispatch({ type: 'startSelect' }) },
-  ] as [State, any]
+  ] as [State, ExtentBoxDispatchers]
+}
+
+interface ExtentBoxDispatchers {
+  startSelect: () => void
 }
