@@ -1,5 +1,6 @@
 import React from 'react'
 import BaseMap from './BaseMap'
+import ExtentBox from './ExtentBox'
 import { useRemoteLayoutState } from './RemoteLayoutState'
 import { useViewState } from './ViewState'
 import ViewStateControls from './ViewStateControls'
@@ -20,6 +21,9 @@ export default function Cartograph() {
       </Layer>
       <Layer>
         <ViewStateControls onEvent={dispatch} />
+      </Layer>
+      <Layer>
+        <ExtentBox />
       </Layer>
     </div>
   )
