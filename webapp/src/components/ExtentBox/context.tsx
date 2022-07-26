@@ -29,8 +29,8 @@ function reducer(state: State, { event, rect, type }: any): State {
       const y = event.clientY - rect.y
       return {
         dragging: true,
-        startSelect: false,
         rectangle: [x, y, x, y],
+        startSelect: false,
       }
     } else return state
   } else if (type === 'onPointerMove') {
