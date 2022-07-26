@@ -17,17 +17,17 @@ export default function ExtentBox() {
         dispatch({
           event,
           rect: ref.current.getBoundingClientRect(),
-          type: 'onPointerDown',
+          type: 'pointerDown',
         })
       }
       onPointerMove={(event) =>
         dispatch({
           event,
           rect: ref.current.getBoundingClientRect(),
-          type: 'onPointerMove',
+          type: 'pointerMove',
         })
       }
-      onPointerUp={() => dispatch({ type: 'onPointerUp' })}
+      onPointerUp={() => dispatch({ type: 'pointerUp' })}
     >
       <div
         style={{

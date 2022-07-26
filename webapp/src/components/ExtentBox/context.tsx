@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer } from 'react'
 import { State } from './types'
+import { Action } from './actions'
 
 const defaultState = {
   dragging: false,
@@ -22,14 +23,10 @@ export function Provider({ children }: ProviderProps) {
   return <context.Provider value={value} children={children} />
 }
 
-interface Action {
-  event?: React.PointerEvent<any>
-  rect?: DOMRect
-  type: string
-}
-function reducer(state: State, { event, rect, type }: Action): State {
-  if (type === 'onPointerDown') {
+function reducer(state: State, action: Action): State {
+  if (action.type === 'pointerDown') {
     if (state.startSelect) {
+      const { event, rect } = action
       const x = event!.clientX - rect!.x
       const y = event!.clientY - rect!.y
       return {
@@ -38,21 +35,22 @@ function reducer(state: State, { event, rect, type }: Action): State {
         startSelect: false,
       }
     } else return state
-  } else if (type === 'onPointerMove') {
+  } else if (action.type === 'pointerMove') {
     const {
       dragging,
       rectangle: [x0, y0],
     } = state
     if (dragging) {
+      const { event, rect } = action
       const x = event!.clientX - rect!.x
       const y = event!.clientY - rect!.y
       return { ...state, rectangle: [x0, y0, x, y] }
     } else return state
-  } else if (type === 'onPointerUp') {
+  } else if (action.type === 'pointerUp') {
     return { ...state, dragging: false }
-  } else if (type === 'startSelect') {
+  } else if (action.type === 'startSelect') {
     return { ...state, startSelect: true }
-  } else throw Error(`irreducible action type: ${type}`)
+  } else throw Error(`irreducible action type`)
 }
 
 export function useExtentBox() {
