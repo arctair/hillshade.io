@@ -1,6 +1,5 @@
 import { createContext, useContext, useReducer } from 'react'
-import { State } from './types'
-import { Action } from './actions'
+import { Action, State } from './types'
 
 const defaultState = {
   dragging: false,
