@@ -16,20 +16,20 @@ export default function ExtentBox() {
         position: 'relative',
         overflow: 'hidden',
       }}
-      onPointerDown={(event) =>
+      onPointerDown={({ clientX, clientY }) => {
+        const { x, y } = ref.current.getBoundingClientRect()
         pointerDown({
-          event,
-          rect: ref.current.getBoundingClientRect(),
+          position: [clientX - x, clientY - y],
           viewState,
         })
-      }
-      onPointerMove={(event) =>
+      }}
+      onPointerMove={({ clientX, clientY }) => {
+        const { x, y } = ref.current.getBoundingClientRect()
         pointerMove({
-          event,
-          rect: ref.current.getBoundingClientRect(),
+          position: [clientX - x, clientY - y],
           viewState,
         })
-      }
+      }}
       onPointerUp={pointerUp}
     >
       <div

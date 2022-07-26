@@ -13,8 +13,7 @@ export type Action =
   | StartSelectAction
 
 export interface PointerDownProps {
-  event: React.PointerEvent
-  rect: DOMRect
+  position: [number, number]
   viewState: ViewState
 }
 
@@ -23,8 +22,7 @@ interface PointerDownAction extends PointerDownProps {
 }
 
 export interface PointerMoveProps {
-  event: React.PointerEvent
-  rect: DOMRect
+  position: [number, number]
   viewState: ViewState
 }
 
