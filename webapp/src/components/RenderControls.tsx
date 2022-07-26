@@ -12,7 +12,7 @@ export default function RenderControls() {
     { errors, layout: remoteLayout },
     { createLayout, forgetLayout },
   ] = useRemoteLayoutState()
-  const { startSelect } = useExtentBox()
+  const { startSelect } = useExtentBox()[1]
   const layout = selectLayout(viewState)
   layout.extent = transformExtent(layout.extent, TILE_TO_EPSG_3857)
   const isWorldScreenResolutionTooBig = selectWorldScreenResolution(

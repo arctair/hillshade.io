@@ -51,6 +51,9 @@ function reducer(state: State, { event, rect, type }: any): State {
 }
 
 export function useExtentBox() {
-  const dispatch = useContext(context)[1]
-  return { startSelect: () => dispatch({ type: 'startSelect' }) }
+  const [state, dispatch] = useContext(context)
+  return [
+    state,
+    { startSelect: () => dispatch({ type: 'startSelect' }) },
+  ] as [State, any]
 }

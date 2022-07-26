@@ -4,12 +4,15 @@ import { State } from './types'
 
 export default function ExtentBox() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
-  const [extent, dispatch] = useContext(context)
+  const [state, dispatch] = useContext(context)
 
   return (
     <div
       ref={ref}
-      style={{ height: '100%', position: 'relative' }}
+      style={{
+        height: '100%',
+        position: 'relative',
+      }}
       onPointerDown={(event) =>
         dispatch({
           event,
@@ -28,7 +31,7 @@ export default function ExtentBox() {
     >
       <div
         style={{
-          ...selectStyle(extent),
+          ...selectStyle(state),
           border: '1px solid red',
           position: 'absolute',
         }}
