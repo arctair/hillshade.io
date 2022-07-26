@@ -1,14 +1,10 @@
-import { MutableRefObject, useReducer, useRef } from 'react'
-
-type State = {
-  dragging: boolean
-  rectangle: [number, number, number, number]
-}
-const defaultState = { dragging: false, rectangle: [0, 0, 0, 0] } as State
+import { MutableRefObject, useContext, useRef } from 'react'
+import { context } from './context'
+import { State } from './types'
 
 export default function ExtentBox() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
-  const [extent, dispatch] = useReducer(reducer, defaultState)
+  const [extent, dispatch] = useContext(context)
 
   return (
     <div
@@ -39,26 +35,6 @@ export default function ExtentBox() {
       />
     </div>
   )
-}
-
-function reducer(state: State, { event, rect, type }: any): State {
-  if (type === 'onPointerDown') {
-    const x = event.clientX - rect.x
-    const y = event.clientY - rect.y
-    return { dragging: true, rectangle: [x, y, x, y] }
-  } else if (type === 'onPointerMove') {
-    const {
-      dragging,
-      rectangle: [x0, y0],
-    } = state
-    if (dragging) {
-      const x = event.clientX - rect.x
-      const y = event.clientY - rect.y
-      return { ...state, rectangle: [x0, y0, x, y] }
-    } else return state
-  } else if (type === 'onPointerUp') {
-    return { ...state, dragging: false }
-  } else throw Error(`irreducible action type: ${type}`)
 }
 
 const selectStyle = ({ rectangle: [x0, y0, x1, y1] }: State) => {

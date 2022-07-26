@@ -1,4 +1,5 @@
 import Cartograph from './components/Cartograph'
+import { Provider as ExtentBoxProvider } from './components/ExtentBox/context'
 import Footer from './components/Footer'
 import { RemoteLayoutProvider } from './components/RemoteLayoutState'
 import Sidebar from './components/Sidebar'
@@ -19,12 +20,14 @@ export default function App() {
         >
           <ViewStateProvider>
             <RemoteLayoutProvider>
-              <div style={{ flex: 0, flexBasis: '30vw' }}>
-                <Sidebar />
-              </div>
-              <div style={{ flex: 1 }}>
-                <Cartograph />
-              </div>
+              <ExtentBoxProvider>
+                <div style={{ flex: 0, flexBasis: '30vw' }}>
+                  <Sidebar />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <Cartograph />
+                </div>
+              </ExtentBoxProvider>
             </RemoteLayoutProvider>
           </ViewStateProvider>
         </div>
