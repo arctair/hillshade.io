@@ -1,7 +1,6 @@
 import React, { useContext, useReducer } from 'react'
-import { KeyedLayout } from '../types'
+import { Extent, KeyedLayout } from '../types'
 import ViewState, { useViewState } from '../ViewState'
-import { selectLayout } from '../ViewState/selectors'
 import { TILE_TO_EPSG_3857 } from '../transformations'
 import {
   ActionType,
@@ -12,6 +11,8 @@ import {
   Forget,
   HeightmapURLAvailable,
 } from './actions'
+import { selectLayout } from '../selectors'
+import { useExtentBox } from '../ExtentBox/context'
 
 const defaultState = { errors: [], layout: undefined }
 interface State {
@@ -45,6 +46,7 @@ export function RemoteLayoutProvider({
   children,
 }: RemoteLayoutProviderProps) {
   const [viewState] = useViewState()
+  const [{ rectangle }] = useExtentBox()
   const [state, dispatch] = useReducer(reducer, defaultState)
   return (
     <Context.Provider
@@ -52,7 +54,8 @@ export function RemoteLayoutProvider({
       value={[
         state,
         {
-          createLayout: () => createLayout(dispatch, state, viewState),
+          createLayout: () =>
+            createLayout(dispatch, state, viewState, rectangle),
           forgetLayout: () => dispatch({ type: ActionType.Forget }),
         },
       ]}
@@ -105,10 +108,11 @@ async function createLayout(
   dispatch: React.Dispatch<Action>,
   { timer }: State,
   viewState: ViewState,
+  extent?: Extent,
 ) {
   clearInterval(timer)
 
-  const layout = selectLayout(viewState, TILE_TO_EPSG_3857)
+  const layout = selectLayout(viewState, extent, TILE_TO_EPSG_3857)
 
   dispatch({ type: ActionType.CreateStart, layout })
   const response = await fetch('https://api.hillshade.io', {

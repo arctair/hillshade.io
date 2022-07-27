@@ -87,7 +87,7 @@ const selectExtent = ([x0, y0, x1, y1]: [
   number,
 ]): [number, number, number, number] => [
   Math.min(x0, x1),
-  Math.min(y0, y1),
-  Math.max(x0, x1),
   Math.max(y0, y1),
+  Math.max(x0, x1),
+  Math.min(y0, y1),
 ]

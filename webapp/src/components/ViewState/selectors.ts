@@ -62,15 +62,3 @@ export function selectTileExtent1D({
   const offsetFloor = Math.floor(offset * tileCount)
   return [offsetFloor, offsetFloor + size / 256 + 1]
 }
-
-export function selectLayout(
-  { mapSize: [width, height], offset: [x, y], zoom }: ViewState,
-  transformer = ([x, y]: [number, number]): [number, number] => [x, y],
-): Layout {
-  const dx = (Math.pow(2, -zoom) / 256) * width
-  const dy = (Math.pow(2, -zoom) / 256) * height
-  return {
-    size: [width, height],
-    extent: transformExtent([x, y + dy, x + dx, y], transformer),
-  }
-}

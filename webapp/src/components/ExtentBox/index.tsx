@@ -51,9 +51,9 @@ const selectStyle = (
   const [x0, y0, x1, y1] = state.rectangle
   const scale = Math.pow(2, zoom)
   const left = (x0 - x) * 256 * scale
-  const top = (y0 - y) * 256 * scale
+  const bottom = (y0 - y) * 256 * scale
   const right = (x1 - x) * 256 * scale
-  const bottom = (y1 - y) * 256 * scale
+  const top = (y1 - y) * 256 * scale
   return {
     left: px(left),
     top: px(top),

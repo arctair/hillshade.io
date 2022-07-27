@@ -1,10 +1,10 @@
 import { useRemoteLayoutState } from './RemoteLayoutState'
 import { TILE_TO_EPSG_3857 } from './transformations'
 import { useViewState } from './ViewState'
-import { selectLayout } from './ViewState/selectors'
 import { LayoutSummary, KeyedLayoutSummary } from './LayoutSummary'
 import { selectWorldScreenResolution } from './types'
 import { useExtentBox } from './ExtentBox/context'
+import { selectLayout } from './selectors'
 
 export default function RenderControls() {
   const [viewState] = useViewState()
@@ -12,8 +12,8 @@ export default function RenderControls() {
     { errors, layout: remoteLayout },
     { createLayout, forgetLayout },
   ] = useRemoteLayoutState()
-  const { startSelect } = useExtentBox()[1]
-  const layout = selectLayout(viewState, TILE_TO_EPSG_3857)
+  const [{ rectangle }, { startSelect }] = useExtentBox()
+  const layout = selectLayout(viewState, rectangle, TILE_TO_EPSG_3857)
   const isWorldScreenResolutionTooBig = selectWorldScreenResolution(
     layout,
   ).some((v) => v > 200)

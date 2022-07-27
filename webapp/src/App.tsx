@@ -19,16 +19,16 @@ export default function App() {
           style={{ display: 'flex', flexDirection: 'row', height: '100%' }}
         >
           <ViewStateProvider>
-            <RemoteLayoutProvider>
-              <ExtentBoxProvider>
+            <ExtentBoxProvider>
+              <RemoteLayoutProvider>
                 <div style={{ flex: 0, flexBasis: '30vw' }}>
                   <Sidebar />
                 </div>
                 <div style={{ flex: 1 }}>
                   <Cartograph />
                 </div>
-              </ExtentBoxProvider>
-            </RemoteLayoutProvider>
+              </RemoteLayoutProvider>
+            </ExtentBoxProvider>
           </ViewStateProvider>
         </div>
       </div>

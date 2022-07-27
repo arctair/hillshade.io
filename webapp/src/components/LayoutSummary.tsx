@@ -1,13 +1,13 @@
 import { useExtentBox } from './ExtentBox/context'
+import { selectLayout } from './selectors'
 import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
 import { KeyedLayout, Layout, selectWorldScreenResolution } from './types'
 import { useViewState } from './ViewState'
-import { selectLayout } from './ViewState/selectors'
 
 export function LayoutSummary() {
   const [{ rectangle }] = useExtentBox()
   const [viewState] = useViewState()
-  const layout = selectLayout(viewState, TILE_TO_EPSG_3857)
+  const layout = selectLayout(viewState, rectangle, TILE_TO_EPSG_3857)
   const extent = rectangle
     ? transformExtent(rectangle, TILE_TO_EPSG_3857)
     : layout.extent
