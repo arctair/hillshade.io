@@ -67,10 +67,10 @@ export function selectLayout({
   offset: [x, y],
   zoom,
 }: ViewState): Layout {
-  const dx = ((2 * Math.pow(2, -zoom)) / 256) * width
-  const dy = ((2 * Math.pow(2, -zoom)) / 256) * height
+  const dx = (Math.pow(2, -zoom) / 256) * width
+  const dy = (Math.pow(2, -zoom) / 256) * height
   return {
     size: [width, height],
-    extent: [x * 2 - 1, y * 2 - 1 + dy, x * 2 - 1 + dx, y * 2 - 1],
+    extent: [x, y + dy, x + dx, y],
   }
 }

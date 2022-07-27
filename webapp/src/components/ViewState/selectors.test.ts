@@ -108,7 +108,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-1, 0, 3, -1]
+      const expected = [0, 1 / 2, 2, 0]
       expect(actual).toEqual(expected)
     })
     test('map extent matches world extent', () => {
@@ -118,7 +118,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [-1, 1, 1, -1]
+      const expected = [0, 1, 1, 0]
       expect(actual).toEqual(expected)
     })
     test('map extent offset from world extent', () => {
@@ -128,7 +128,7 @@ describe('selectLayout', () => {
         zoom: 0,
       }
       const actual = selectLayout(view).extent
-      const expected = [1, 3, 3, 1]
+      const expected = [1, 2, 2, 1]
       expect(actual).toEqual(expected)
     })
     test('map extent is one quarter of world extent', () => {
@@ -138,7 +138,7 @@ describe('selectLayout', () => {
         zoom: 1,
       }
       const actual = selectLayout(view).extent
-      const expected = [-1, 0, 0, -1]
+      const expected = [0, 1 / 2, 1 / 2, 0]
       expect(actual).toEqual(expected)
     })
   })
