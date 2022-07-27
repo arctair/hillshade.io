@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer } from 'react'
+import { Extent } from '../types'
 import { Action, PointerDownProps, PointerMoveProps, State } from './types'
 
 const defaultState = {
@@ -80,12 +81,7 @@ interface ExtentBoxDispatchers {
   startSelect: () => void
 }
 
-const selectExtent = ([x0, y0, x1, y1]: [
-  number,
-  number,
-  number,
-  number,
-]): [number, number, number, number] => [
+const selectExtent = ([x0, y0, x1, y1]: Extent): Extent => [
   Math.min(x0, x1),
   Math.max(y0, y1),
   Math.max(x0, x1),

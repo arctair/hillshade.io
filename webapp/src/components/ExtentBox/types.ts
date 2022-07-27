@@ -1,9 +1,10 @@
+import { Extent } from '../types'
 import ViewState from '../ViewState'
 
 export type State = {
   dragging: boolean
   startSelect: boolean
-  rectangle?: [number, number, number, number]
+  rectangle?: Extent
 }
 
 export type Action =
