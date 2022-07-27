@@ -1,6 +1,4 @@
 import ViewState from '.'
-import { transformExtent } from '../transformations'
-import { Layout } from '../types'
 
 export function selectGLExtent2D({
   mapSize: [width, height],
