@@ -1,4 +1,4 @@
-import { MutableRefObject, useRef } from 'react'
+import { CSSProperties, MutableRefObject, useRef } from 'react'
 import ViewState, { useViewState } from '../ViewState'
 import { useExtentBox } from './context'
 import { State } from './types'
@@ -46,12 +46,12 @@ export default function ExtentBox() {
 const selectStyle = (
   { rectangle: [x0, y0, x1, y1] }: State,
   { offset: [x, y], zoom }: ViewState,
-) => {
+): CSSProperties => {
   const scale = Math.pow(2, zoom)
-  const left = (Math.min(x0, x1) - x) * 256 * scale
-  const top = (Math.min(y0, y1) - y) * 256 * scale
-  const right = (Math.max(x0, x1) - x) * 256 * scale
-  const bottom = (Math.max(y0, y1) - y) * 256 * scale
+  const left = (x0 - x) * 256 * scale
+  const top = (y0 - y) * 256 * scale
+  const right = (x1 - x) * 256 * scale
+  const bottom = (y1 - y) * 256 * scale
   return {
     left: px(left),
     top: px(top),
