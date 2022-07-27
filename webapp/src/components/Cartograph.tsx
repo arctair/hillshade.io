@@ -3,14 +3,11 @@ import BaseMap from './BaseMap'
 import ExtentBox from './ExtentBox'
 import { useExtentBox } from './ExtentBox/context'
 import { selectActive } from './ExtentBox/selectors'
-import { useRemoteLayoutState } from './RemoteLayoutState'
+import Preview from './Preview'
 import { useViewState } from './ViewState'
 import ViewStateControls from './ViewStateControls'
 
 export default function Cartograph() {
-  const [{ layout }] = useRemoteLayoutState()
-  const heightmapURL = layout?.attachments.heightmapPreviewURL
-
   const dispatch = useViewState()[1]
   const [state] = useExtentBox()
 
@@ -20,7 +17,7 @@ export default function Cartograph() {
         <BaseMap />
       </Layer>
       <Layer>
-        <img src={heightmapURL} alt="" />
+        <Preview />
       </Layer>
       <Layer>
         <ViewStateControls onEvent={dispatch} />
