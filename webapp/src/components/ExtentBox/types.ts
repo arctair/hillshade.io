@@ -3,7 +3,7 @@ import ViewState from '../ViewState'
 export type State = {
   dragging: boolean
   startSelect: boolean
-  rectangle: [number, number, number, number]
+  rectangle?: [number, number, number, number]
 }
 
 export type Action =

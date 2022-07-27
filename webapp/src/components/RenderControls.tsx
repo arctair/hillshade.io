@@ -24,7 +24,7 @@ export default function RenderControls() {
     <>
       <div style={{ fontWeight: 'bold' }}>layout</div>
       <button onClick={startSelect}>select extent</button>
-      <LayoutSummary layout={layout} />
+      <LayoutSummary />
       <div style={{ fontWeight: 'bold' }}>
         remote layout&nbsp;
         <button

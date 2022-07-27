@@ -4,7 +4,7 @@ import { Action, PointerDownProps, PointerMoveProps, State } from './types'
 const defaultState = {
   dragging: false,
   startSelect: false,
-  rectangle: [0, 0, 0, 0],
+  rectangle: undefined,
 } as State
 
 export const context = createContext([
@@ -35,7 +35,7 @@ function reducer(state: State, action: Action): State {
     }
     case 'pointerMove': {
       if (!state.dragging) return state
-      const [x0, y0] = state.rectangle
+      const [x0, y0] = state.rectangle!
       const [x, y] = offset(action)
       return { ...state, rectangle: [x0, y0, x, y] }
     }
@@ -62,7 +62,7 @@ export function useExtentBox(): [State, ExtentBoxDispatchers] {
   return [
     {
       ...state,
-      rectangle: selectExtent(rectangle),
+      rectangle: rectangle ? selectExtent(rectangle) : undefined,
     },
     {
       pointerDown: (props) => dispatch({ ...props, type: 'pointerDown' }),

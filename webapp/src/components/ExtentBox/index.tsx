@@ -44,9 +44,11 @@ export default function ExtentBox() {
 }
 
 const selectStyle = (
-  { rectangle: [x0, y0, x1, y1] }: State,
+  state: State,
   { offset: [x, y], zoom }: ViewState,
 ): CSSProperties => {
+  if (!state.rectangle) return { visibility: 'hidden' }
+  const [x0, y0, x1, y1] = state.rectangle
   const scale = Math.pow(2, zoom)
   const left = (x0 - x) * 256 * scale
   const top = (y0 - y) * 256 * scale

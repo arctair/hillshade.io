@@ -1,22 +1,56 @@
+import { useExtentBox } from './ExtentBox/context'
+import { TILE_TO_EPSG_3857, transformExtent } from './transformations'
 import { KeyedLayout, Layout, selectWorldScreenResolution } from './types'
+import { useViewState } from './ViewState'
+import { selectLayout } from './ViewState/selectors'
 
-interface LayoutSummaryProps {
+export function LayoutSummary() {
+  const [{ rectangle }] = useExtentBox()
+  const [viewState] = useViewState()
+  const layout = selectLayout(viewState, TILE_TO_EPSG_3857)
+  const extent = rectangle
+    ? transformExtent(rectangle, TILE_TO_EPSG_3857)
+    : layout.extent
+  return (
+    <>
+      <ExtentSummary extent={extent} />
+      <SizeSummary size={layout.size} />
+      <WorldScreenResolutionSummary layout={layout} />
+    </>
+  )
+}
+
+interface ExtentSummaryProps {
+  extent: [number, number, number, number]
+}
+export function ExtentSummary({ extent }: ExtentSummaryProps) {
+  return (
+    <div>
+      extent: [ {extent.map((v) => v.toFixed(0)).join(' ')} ] (EPSG:3857)
+    </div>
+  )
+}
+
+interface SizeSummaryProps {
+  size: [number, number]
+}
+export function SizeSummary({ size }: SizeSummaryProps) {
+  return <div>size: {size.join('x')}</div>
+}
+
+interface WorldScreenResolutionSummaryProps {
   layout: Layout
 }
-export function LayoutSummary({ layout }: LayoutSummaryProps) {
-  const extent = layout.extent.map((v) => v.toFixed(0)).join(' ')
-  const size = layout.size.join('x')
+export function WorldScreenResolutionSummary({
+  layout,
+}: WorldScreenResolutionSummaryProps) {
   const worldScreenResolution = selectWorldScreenResolution(layout)
     .map((v) => v.toFixed(2))
     .join('x')
   return (
-    <>
-      <div>extent: [ {extent} ] (EPSG:3857)</div>
-      <div>size: {size}</div>
-      <div>
-        world screen resolution: {worldScreenResolution} meters/pixel
-      </div>
-    </>
+    <div>
+      world screen resolution: {worldScreenResolution} meters/pixel
+    </div>
   )
 }
 
@@ -27,7 +61,9 @@ export function KeyedLayoutSummary({ layout }: KeyedLayoutSummaryProps) {
   return layout ? (
     <>
       <div>key: {layout.key}</div>
-      <LayoutSummary layout={layout} />
+      <ExtentSummary extent={layout.extent} />
+      <SizeSummary size={layout.size} />
+      <WorldScreenResolutionSummary layout={layout} />
       <a
         style={{
           display: 'block',
