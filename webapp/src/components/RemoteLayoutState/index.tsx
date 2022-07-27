@@ -2,7 +2,7 @@ import React, { useContext, useReducer } from 'react'
 import { KeyedLayout } from '../types'
 import ViewState, { useViewState } from '../ViewState'
 import { selectLayout } from '../ViewState/selectors'
-import { TILE_TO_EPSG_3857, transformExtent } from '../transformations'
+import { TILE_TO_EPSG_3857 } from '../transformations'
 import {
   ActionType,
   Action,
@@ -108,8 +108,7 @@ async function createLayout(
 ) {
   clearInterval(timer)
 
-  const layout = selectLayout(viewState)
-  layout.extent = transformExtent(layout.extent, TILE_TO_EPSG_3857)
+  const layout = selectLayout(viewState, TILE_TO_EPSG_3857)
 
   dispatch({ type: ActionType.CreateStart, layout })
   const response = await fetch('https://api.hillshade.io', {

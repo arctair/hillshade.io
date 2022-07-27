@@ -1,4 +1,5 @@
 import ViewState from '.'
+import { transformExtent } from '../transformations'
 import { Layout } from '../types'
 
 export function selectGLExtent2D({
@@ -62,15 +63,14 @@ export function selectTileExtent1D({
   return [offsetFloor, offsetFloor + size / 256 + 1]
 }
 
-export function selectLayout({
-  mapSize: [width, height],
-  offset: [x, y],
-  zoom,
-}: ViewState): Layout {
+export function selectLayout(
+  { mapSize: [width, height], offset: [x, y], zoom }: ViewState,
+  transformer = ([x, y]: [number, number]): [number, number] => [x, y],
+): Layout {
   const dx = (Math.pow(2, -zoom) / 256) * width
   const dy = (Math.pow(2, -zoom) / 256) * height
   return {
     size: [width, height],
-    extent: [x, y + dy, x + dx, y],
+    extent: transformExtent([x, y + dy, x + dx, y], transformer),
   }
 }
