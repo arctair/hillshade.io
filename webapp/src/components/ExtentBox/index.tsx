@@ -1,7 +1,7 @@
-import { CSSProperties, MutableRefObject, useRef } from 'react'
-import ViewState, { useViewState } from '../ViewState'
+import { MutableRefObject, useRef } from 'react'
+import { useViewState } from '../ViewState'
 import { useExtentBox } from './context'
-import { State } from './types'
+import { selectBoxStyle } from './selectors'
 
 export default function ExtentBox() {
   const ref = useRef() as MutableRefObject<HTMLDivElement>
@@ -34,7 +34,9 @@ export default function ExtentBox() {
     >
       <div
         style={{
-          ...selectStyle(state, viewState),
+          ...(state.rectangle
+            ? selectBoxStyle(viewState, state.rectangle)
+            : { visibility: 'hidden' }),
           border: '1px solid red',
           position: 'absolute',
         }}
@@ -42,24 +44,3 @@ export default function ExtentBox() {
     </div>
   )
 }
-
-const selectStyle = (
-  state: State,
-  { offset: [x, y], zoom }: ViewState,
-): CSSProperties => {
-  if (!state.rectangle) return { visibility: 'hidden' }
-  const [x0, y0, x1, y1] = state.rectangle
-  const scale = Math.pow(2, zoom)
-  const left = (x0 - x) * 256 * scale
-  const bottom = (y0 - y) * 256 * scale
-  const right = (x1 - x) * 256 * scale
-  const top = (y1 - y) * 256 * scale
-  return {
-    left: px(left),
-    top: px(top),
-    width: px(right - left),
-    height: px(bottom - top),
-  }
-}
-
-const px = (v: number) => `${v}px`

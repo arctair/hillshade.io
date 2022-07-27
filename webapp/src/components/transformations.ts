@@ -7,6 +7,13 @@ export function TILE_TO_EPSG_3857([x, y]: [number, number]): [
   return [(x * 2 - 1) * MAX_3857_X, (y * 2 - 1) * -MAX_3857_Y]
 }
 
+export function EPSG_3857_TO_TILE([x, y]: [number, number]): [
+  number,
+  number,
+] {
+  return [(x / MAX_3857_X + 1) / 2, (y / -MAX_3857_Y + 1) / 2]
+}
+
 export function EPSG_3857_TO_EPSG_4326([x, y]: [number, number]): [
   number,
   number,
