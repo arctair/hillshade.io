@@ -12,7 +12,7 @@ export default function Sidebar() {
         backgroundColor: light,
         color: dark,
         flexDirection: 'column',
-        overflowY: 'scroll',
+        overflowY: 'auto',
       }}
     >
       <div
